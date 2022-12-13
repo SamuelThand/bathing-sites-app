@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import se.miun.sath2102.dt031g.bathingsites.databinding.BathingSitesViewBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -55,5 +56,10 @@ class BathingSitesFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+//    TODO fixa view binding i fragment? Sätta onclicklistener på bathing sites?
+    private fun setBathingSiteViewOnClickListener() {
+
     }
 }

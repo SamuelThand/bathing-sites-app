@@ -12,6 +12,7 @@ class BathingSitesView @JvmOverloads constructor(
     defStyleAttr: Int = 0) : ConstraintLayout(context, attrs, defStyleAttr) {
 
     private val binding: BathingSitesViewBinding
+    private var storedBathingSites = 0
 
     init {
         binding = BathingSitesViewBinding.inflate(LayoutInflater.from(context), this, true)
