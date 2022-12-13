@@ -1,8 +1,12 @@
 <resources>
     <string name="app_name">Bathing Sites</string>
 
-    <!--  Menu  -->
+    <!--  MainActivity  -->
     <string name="menu_item_settings">Settings</string>
+    <string name="add_bathing_site_button_text">Add Bathing Site</string>
+
+
+
 
 
 </resources>
