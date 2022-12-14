@@ -1,5 +1,6 @@
 package se.miun.sath2102.dt031g.bathingsites
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
@@ -16,6 +17,15 @@ class BathingSitesView @JvmOverloads constructor(
 
     init {
         binding = BathingSitesViewBinding.inflate(LayoutInflater.from(context), this, true)
+        setText()
     }
 
+    @SuppressLint("SetTextI18n")
+    fun setText() {
+        binding.textView.text = "${storedBathingSites} ${context.getString(R.string.bathing_sites_text)}"
+    }
+
+    fun incrementStoredBathingSites() {
+        storedBathingSites ++
+    }
 }
