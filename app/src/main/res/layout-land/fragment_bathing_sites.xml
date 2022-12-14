@@ -22,20 +22,6 @@
             app:layout_constraintTop_toTopOf="parent"
             android:clickable="true"/>
 
-        <com.google.android.material.floatingactionbutton.FloatingActionButton
-            android:id="@+id/addBathingSiteButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:contentDescription="@string/add_bathing_site_button_text"
-            android:src="@drawable/ic_add_bathing_site"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.9"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.95" />
-
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </FrameLayout>
