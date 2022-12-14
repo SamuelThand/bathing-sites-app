@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AddBathingSiteFragment">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <EditText
+            android:id="@+id/name"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/name_text"
+            android:inputType="textPersonName"
+            android:importantForAutofill="no"
+            android:textColorHint="#78909C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.15"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintWidth_percent="1" />
+
+        <EditText
+            android:id="@+id/description"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/description_text"
+            android:inputType="text"
+            android:importantForAutofill="no"
+            android:textColorHint="#78909C"
+            app:layout_constraintHeight_percent="0.15"
+            app:layout_constraintWidth_percent="1"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/name" />
+
+        <EditText
+            android:id="@+id/address"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/address_text"
+            android:importantForAutofill="no"
+            android:inputType="text"
+            android:textColorHint="#78909C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.15"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/description"
+            app:layout_constraintWidth_percent="1" />
+
+        <EditText
+            android:id="@+id/latitude"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/latitude_text"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal"
+            android:textColorHint="#78909C"
+            app:layout_constraintEnd_toStartOf="@+id/longitude"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/address"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <EditText
+            android:id="@+id/longitude"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/longitude_text"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal"
+            android:textColorHint="#78909C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintTop_toBottomOf="@+id/address"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <EditText
+            android:id="@+id/waterTemp"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/water_temp_text"
+            android:importantForAutofill="no"
+            android:inputType="numberDecimal"
+            android:textColorHint="#78909C"
+            app:layout_constraintEnd_toStartOf="@+id/longitude"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/latitude"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <EditText
+            android:id="@+id/waterTempDate"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:hint="@string/date_for_temp_text"
+            android:importantForAutofill="no"
+            android:inputType="date"
+            android:textColorHint="#78909C"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHeight_percent="0.2"
+            app:layout_constraintTop_toBottomOf="@+id/longitude"
+            app:layout_constraintWidth_percent="0.5" />
+
+        <RatingBar
+            android:id="@+id/grade"
+            android:contentDescription="@string/rating_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:progressTint="#FFCC01"
+            android:rating="3"
+            android:stepSize="1"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/waterTemp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
