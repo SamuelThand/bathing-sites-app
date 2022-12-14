@@ -9,13 +9,13 @@
     <string name="bathing_sites_text">Bathing Sites</string>
 
     <!-- AddBathingSiteFragment    -->
-    <string name="name_text">Name</string>
-    <string name="latitude_text">Latitude</string>
-    <string name="longitude_text">Longitude</string>
+    <string name="name_text">Name *</string>
+    <string name="latitude_text">Latitude *</string>
+    <string name="longitude_text">Longitude *</string>
     <string name="water_temp_text">Water temp:</string>
     <string name="date_for_temp_text">Date for temp:</string>
     <string name="description_text">Description</string>
-    <string name="address_text">Address</string>
+    <string name="address_text">Address *</string>
     <string name="rating_text">Rating</string>
 
 
