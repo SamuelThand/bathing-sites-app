@@ -12,4 +12,12 @@
         android:title="SAVE"
         app:showAsAction="always"/>
 
+    <item
+        android:id="@+id/add_bathing_site_menu_show_weather"
+        android:title="Show Weather" />
+
+    <item
+        android:id="@+id/add_bathing_site_menu_settings"
+        android:title="Settings" />
+
 </menu>

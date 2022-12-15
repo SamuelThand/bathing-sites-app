@@ -98,6 +98,14 @@ class AddBathingSiteFragment : Fragment() {
                 }
                 true
             }
+            R.id.add_bathing_site_menu_show_weather -> {
+                val dialog = WeatherDialogFragment()
+                dialog.show(childFragmentManager, "WeatherFragment")
+                true
+            }
+            R.id.add_bathing_site_menu_settings -> {
+                true
+            }
             else -> super.onOptionsItemSelected(item)
         }
     }
