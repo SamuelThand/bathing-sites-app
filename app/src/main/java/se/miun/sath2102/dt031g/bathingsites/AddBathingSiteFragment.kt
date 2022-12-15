@@ -2,11 +2,15 @@ package se.miun.sath2102.dt031g.bathingsites
 
 import android.os.Bundle
 import android.view.*
+import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
+import com.google.android.material.snackbar.Snackbar
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentAddBathingSiteBinding
-import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentBathingSitesBinding
+import java.time.LocalDate
 
-// TODO: Rename parameter arguments, choose names that match
+// TODO: Fixa scrollbar
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -21,46 +25,7 @@ class AddBathingSiteFragment : Fragment() {
     private var param1: String? = null
     private var param2: String? = null
     private lateinit var binding: FragmentAddBathingSiteBinding
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setHasOptionsMenu(true)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View? {
-
-        binding = FragmentAddBathingSiteBinding.inflate(inflater, container, false)
-
-        return binding.root
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.add_bathing_site_view, menu)
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return when (item.itemId) {
-            R.id.add_bathing_site_menu_clear -> {
-                // clear
-                println("clear")
-                true
-            }
-            R.id.add_bathing_site_menu_save -> {
-                // save
-                println("save")
-                true
-            }
-            else -> super.onOptionsItemSelected(item)
-        }
-    }
+    private lateinit var inputFields: MutableMap<EditText, Boolean>
 
     companion object {
         /**
@@ -80,5 +45,147 @@ class AddBathingSiteFragment : Fragment() {
                     putString(ARG_PARAM2, param2)
                 }
             }
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+        arguments?.let {
+            param1 = it.getString(ARG_PARAM1)
+            param2 = it.getString(ARG_PARAM2)
+        }
+    }
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+
+        binding = FragmentAddBathingSiteBinding.inflate(inflater, container, false)
+
+        // True if field is required, false if not
+        inputFields = mutableMapOf(
+            Pair(binding.name, true),
+            Pair(binding.description, false),
+            Pair(binding.address, true),
+            Pair(binding.latitude, true),
+            Pair(binding.longitude, true),
+            Pair(binding.waterTemp, false),
+            Pair(binding.waterTempDate, false),
+        )
+
+        setBathingSiteDateToToday()
+
+        return binding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.add_bathing_site_view, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.add_bathing_site_menu_clear -> {
+                clearForm()
+                true
+            }
+            R.id.add_bathing_site_menu_save -> {
+                determineRequiredFields()
+                validateInput()
+                if (completeForm()) {
+                    displayBathingSiteInfo(buildInfoString())
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun validateInput() {
+        inputFields.forEach {
+            val field = it.key
+            val fieldName = resources.getResourceName(field.id)
+                .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
+            val required: Boolean = it.value
+
+            if (required) {
+                if (field.text.isEmpty()) {
+                    field.error = "${fieldName} is required."
+                }
+            } else {
+                field.error = null
+            }
+        }
+    }
+
+    private fun determineRequiredFields() {
+        val addressText = binding.address.text
+        val latText = binding.latitude.text
+        val longText = binding.longitude.text
+
+        if (addressText.isNotEmpty()) {
+            inputFields[binding.latitude] = false
+            inputFields[binding.longitude] = false
+        } else if (latText.isNotEmpty() || longText.isNotEmpty()) {
+            inputFields[binding.address] = false
+        } else {
+            inputFields[binding.address] = true
+            inputFields[binding.latitude] = true
+            inputFields[binding.longitude] = true
+        }
+    }
+
+    private fun displayBathingSiteInfo(infoString: String) {
+            context?.let {
+                val alertDialogBuilder = AlertDialog.Builder(it)
+                alertDialogBuilder.setMessage(infoString)
+                alertDialogBuilder.show()
+            }
+    }
+
+    private fun completeForm(): Boolean {
+        var completeForm = true
+        inputFields.forEach {
+            val field = it.key
+
+            if (field.error != null) {
+                completeForm = false
+            }
+        }
+
+        return completeForm
+    }
+
+    private fun buildInfoString(): String {
+        var bathingSiteInfo = ""
+
+        inputFields.forEach {
+            val field = it.key
+            val fieldName = resources.getResourceName(field.id)
+                .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
+
+            bathingSiteInfo += "${fieldName}: ${field.text}\n"
+        }
+
+        val gradeField = binding.grade
+        val gradeFieldName = resources.getResourceName(binding.grade.id)
+            .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
+        bathingSiteInfo += "${gradeFieldName}: ${gradeField.rating}\n"
+
+        return bathingSiteInfo
+    }
+
+    private fun setBathingSiteDateToToday() {
+        binding.waterTempDate.setText(LocalDate.now().toString())
+    }
+
+    private fun clearForm() {
+        inputFields.forEach {
+            val field = it.key
+            field.text.clear()
+        }
+        binding.grade.rating = 0F
+        setBathingSiteDateToToday()
     }
 }
