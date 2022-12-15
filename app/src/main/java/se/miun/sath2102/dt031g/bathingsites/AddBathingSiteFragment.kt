@@ -1,5 +1,6 @@
 package se.miun.sath2102.dt031g.bathingsites
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.*
 import android.widget.EditText
@@ -104,6 +105,8 @@ class AddBathingSiteFragment : Fragment() {
                 true
             }
             R.id.add_bathing_site_menu_settings -> {
+                val intent = Intent(activity, SettingsActivity::class.java)
+                activity?.startActivity(intent)
                 true
             }
             else -> super.onOptionsItemSelected(item)
