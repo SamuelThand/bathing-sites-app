@@ -1,10 +1,8 @@
 package se.miun.sath2102.dt031g.bathingsites
 
 import android.os.Bundle
+import android.view.*
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentAddBathingSiteBinding
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentBathingSitesBinding
 
@@ -41,6 +39,27 @@ class AddBathingSiteFragment : Fragment() {
         binding = FragmentAddBathingSiteBinding.inflate(inflater, container, false)
 
         return binding.root
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.add_bathing_site_view, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.add_bathing_site_menu_clear -> {
+                // clear
+                println("clear")
+                true
+            }
+            R.id.add_bathing_site_menu_save -> {
+                // save
+                println("save")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     companion object {
