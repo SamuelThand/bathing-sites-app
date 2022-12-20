@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
-import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentBathingSitesBinding
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentWeatherDialogBinding
 
 // TODO: Rename parameter arguments, choose names that match

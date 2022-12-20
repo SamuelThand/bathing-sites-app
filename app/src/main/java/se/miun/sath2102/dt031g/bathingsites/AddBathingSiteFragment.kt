@@ -6,10 +6,10 @@ import android.view.*
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import com.google.android.material.snackbar.BaseTransientBottomBar.LENGTH_LONG
-import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.*
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentAddBathingSiteBinding
 import java.time.LocalDate
+import kotlin.coroutines.CoroutineContext
 
 // TODO: Fixa scrollbar
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -21,12 +21,16 @@ private const val ARG_PARAM2 = "param2"
  * Use the [AddBathingSiteFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
-class AddBathingSiteFragment : Fragment() {
+class AddBathingSiteFragment : Fragment(), CoroutineScope {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
+
+    private lateinit var job: Job
+    override val coroutineContext: CoroutineContext
+        get() = job + Dispatchers.IO
 
     companion object {
         /**
@@ -55,6 +59,14 @@ class AddBathingSiteFragment : Fragment() {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
         }
+
+        job = Job()
+        getWeatherData()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        job.cancel()
     }
 
     override fun onCreateView(
@@ -111,6 +123,15 @@ class AddBathingSiteFragment : Fragment() {
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun getWeatherData() {
+        // läs av koordinater, validera och hämta om de finns
+
+    }
+
+    private fun downloadWeatherData() {
+
     }
 
     private fun validateInput() {
