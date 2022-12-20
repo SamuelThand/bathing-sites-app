@@ -2,12 +2,17 @@ package se.miun.sath2102.dt031g.bathingsites
 
 import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
+import android.util.Log
 import android.view.*
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import kotlinx.coroutines.*
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentAddBathingSiteBinding
+import java.io.File
+import java.net.URL
+import java.net.URLConnection
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
@@ -61,7 +66,6 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
 
         job = Job()
-        getWeatherData()
     }
 
     override fun onDestroy() {
@@ -112,6 +116,8 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 true
             }
             R.id.add_bathing_site_menu_show_weather -> {
+                getWeatherData()
+
                 val dialog = WeatherDialogFragment()
                 dialog.show(childFragmentManager, "WeatherFragment")
                 true
@@ -127,12 +133,68 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
     private fun getWeatherData() {
         // läs av koordinater, validera och hämta om de finns
+        println("get weather data")
+
+        val address = binding.address.text
+        val lat = binding.latitude.text
+        val long = binding.longitude.text
+        val addressProvided: Boolean = address.isNotEmpty()
+        val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
+
+        if (addressProvided && coordinatesProvided) {
+            launch (Dispatchers.IO) {
+                downloadWeatherData("lat=$lat&long=$long")
+            }
+
+        } else if (coordinatesProvided) {
+            launch (Dispatchers.IO) {
+                downloadWeatherData("lat=$lat&long=$long")
+            }
+        } else if (addressProvided) {
+            // ladda ner via address
+        } else {
+            // Visa att info inte kunde hämtas
+        }
 
     }
 
-    private fun downloadWeatherData() {
+    private fun downloadWeatherData(queryString: String) {
 
+        context?.let {
+            val weatherURL = SettingsActivity.getWeatherURL(it)
+            val queryURL = "$weatherURL?$queryString"
+            // lägg till querystring
+
+            println(queryURL)
+
+//            lat=13.3&lon=63.456
+
+            val weatherConnection = URL(queryURL).openConnection()
+                .connect()
+
+            // öppna inputstream och läs svaret som en sträng, konvertera till JSON
+
+        }
+        // hämta nedladdningsurl från preferences
     }
+
+
+//    private fun downloadFile(url: String, downloadPath: File) {
+//        val downloadConnection = URL(url).openConnection()
+//        downloadConnection.connect()
+//
+//        try {
+//            downloadPath.downloadToThisPath(downloadConnection)
+//        } catch (e: Exception) {
+//            Log.e(TAG, "Error downloading $downloadPath: $e")
+//        }
+//    }
+//
+//    private fun File.downloadToThisPath(connection: URLConnection) {
+//        this.outputStream().use { fileOutput ->
+//            connection.getInputStream().copyTo(fileOutput)
+//        }
+//    }
 
     private fun validateInput() {
         inputFields.forEach {

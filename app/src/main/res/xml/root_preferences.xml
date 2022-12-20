@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <EditTextPreference
         android:defaultValue="https://dt031g.programvaruteknik.nu/bathingsites/weather.php"
-        android:key="weather_url"
+        android:key="@string/weather_url_key"
         android:selectAllOnFocus="true"
         android:singleLine="true"
         android:icon="@drawable/ic_weather"
