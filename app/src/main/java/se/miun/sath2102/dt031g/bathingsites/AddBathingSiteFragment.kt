@@ -1,5 +1,6 @@
 package se.miun.sath2102.dt031g.bathingsites
 
+import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
 import android.provider.Settings
@@ -8,6 +9,8 @@ import android.view.*
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import com.google.android.material.snackbar.BaseTransientBottomBar
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentAddBathingSiteBinding
 import java.io.File
@@ -32,6 +35,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     private var param2: String? = null
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
+    private val TAG = "AddBathingSiteFragment"
 
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
@@ -116,11 +120,17 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 true
             }
             R.id.add_bathing_site_menu_show_weather -> {
-                getWeatherData()
 
-                val dialog = WeatherDialogFragment()
-                dialog.show(childFragmentManager, "WeatherFragment")
-                true
+                // Visa bara fragment om hämtningen var successful
+
+                if (getWeatherData()) {
+                    val dialog = WeatherDialogFragment()
+                    dialog.show(childFragmentManager, "WeatherFragment")
+                    true
+                } else {
+                    return false
+                }
+
             }
             R.id.add_bathing_site_menu_settings -> {
                 val intent = Intent(activity, SettingsActivity::class.java)
@@ -131,9 +141,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private fun getWeatherData() {
-        // läs av koordinater, validera och hämta om de finns
-        println("get weather data")
+    private fun getWeatherData(): Boolean {
 
         val address = binding.address.text
         val lat = binding.latitude.text
@@ -141,60 +149,74 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         val addressProvided: Boolean = address.isNotEmpty()
         val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
 
+//        TODO progressbar, sen starta weatherdialogfragment med väderdatan
         if (addressProvided && coordinatesProvided) {
             launch (Dispatchers.IO) {
-                downloadWeatherData("lat=$lat&long=$long")
+                val progress = makeProgressDialog()
+                downloadWeatherData("lat=$lat&lon=$long")
             }
+            return true
 
         } else if (coordinatesProvided) {
             launch (Dispatchers.IO) {
-                downloadWeatherData("lat=$lat&long=$long")
+                downloadWeatherData("lat=$lat&lon=$long")
             }
+            return true
         } else if (addressProvided) {
-            // ladda ner via address
+            launch (Dispatchers.IO) {
+                downloadWeatherData("q=$address")
+            }
+            return true
         } else {
-            // Visa att info inte kunde hämtas
+            val cantGetWeatherInfoSnackbar = Snackbar.make(binding.root, R.string.cant_download_weather_data,
+                BaseTransientBottomBar.LENGTH_LONG
+            )
+            cantGetWeatherInfoSnackbar.show()
+
+            return false
         }
 
     }
 
-    private fun downloadWeatherData(queryString: String) {
+    private suspend fun makeProgressDialog(): ProgressDialog {
+        return withContext(Dispatchers.Main) {
+            val progress = ProgressDialog(context)
+//            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER)
+//            progress.setTitle(getString(R.string.download_weather_progress_title))
+            progress.setMessage(getString(R.string.download_weather_progress_message))
+            progress.show()
 
-        context?.let {
-            val weatherURL = SettingsActivity.getWeatherURL(it)
-            val queryURL = "$weatherURL?$queryString"
-            // lägg till querystring
-
-            println(queryURL)
+            return@withContext progress
+        }
+    }
 
 //            lat=13.3&lon=63.456
+    private fun downloadWeatherData(queryString: String) {
 
-            val weatherConnection = URL(queryURL).openConnection()
-                .connect()
+        context?.let { it ->
+            val weatherURL = SettingsActivity.getWeatherURL(it)
+            val queryURL = "$weatherURL?$queryString"
 
-            // öppna inputstream och läs svaret som en sträng, konvertera till JSON
+            //TODO Translate spaces, åäö to url format
+
+            try {
+                val weatherConnection = URL(queryURL).openConnection()
+                weatherConnection.connect()
+
+                val weatherString: String = weatherConnection.getInputStream()
+                    .bufferedReader().use { it.readText() }
+
+                println(weatherString)
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error downloading $queryString: $e")
+            }
+
+            //TODO öppna inputstream och läs svaret som en sträng, konvertera till JSON
+            // TODO Visa ut datan eller printat ut meddelandet att datan inte kunde hämtas
 
         }
-        // hämta nedladdningsurl från preferences
     }
-
-
-//    private fun downloadFile(url: String, downloadPath: File) {
-//        val downloadConnection = URL(url).openConnection()
-//        downloadConnection.connect()
-//
-//        try {
-//            downloadPath.downloadToThisPath(downloadConnection)
-//        } catch (e: Exception) {
-//            Log.e(TAG, "Error downloading $downloadPath: $e")
-//        }
-//    }
-//
-//    private fun File.downloadToThisPath(connection: URLConnection) {
-//        this.outputStream().use { fileOutput ->
-//            connection.getInputStream().copyTo(fileOutput)
-//        }
-//    }
 
     private fun validateInput() {
         inputFields.forEach {

@@ -17,6 +17,9 @@
     <string name="description_text">Description</string>
     <string name="address_text">Address *</string>
     <string name="rating_text">Rating</string>
+    <string name="cant_download_weather_data">Correct address or Latitude and Longitude is required for
+    displaying weather information.</string>
+    <string name="download_weather_progress_message">Getting current weather..</string>
 
     <!-- SettingsActivity   -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
