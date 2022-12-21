@@ -122,8 +122,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             R.id.add_bathing_site_menu_show_weather -> {
 
                 // Visa bara fragment om hämtningen var successful
+                // TODO kör hanteringen av knapptryckningen i coroutine på nått sätt utan att låsa UI
 
-                if (getWeatherData()) {
+                if (runBlocking { getWeatherData() }) {
                     val dialog = WeatherDialogFragment()
                     dialog.show(childFragmentManager, "WeatherFragment")
                     true
@@ -141,7 +142,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private fun getWeatherData(): Boolean {
+    private suspend fun getWeatherData(): Boolean {
 
         val address = binding.address.text
         val lat = binding.latitude.text
@@ -149,12 +150,16 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         val addressProvided: Boolean = address.isNotEmpty()
         val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
 
-//        TODO progressbar, sen starta weatherdialogfragment med väderdatan
+//      TODO progressbar, sen starta weatherdialogfragment med väderdatan
         if (addressProvided && coordinatesProvided) {
-            launch (Dispatchers.IO) {
+            job = launch (Dispatchers.IO) {
                 val progress = makeProgressDialog()
                 downloadWeatherData("lat=$lat&lon=$long")
+                delayProgress()
+                progress.dismiss()
             }
+
+            job.join()
             return true
 
         } else if (coordinatesProvided) {
@@ -178,11 +183,15 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
     }
 
+    private suspend fun delayProgress() {
+        withContext(Dispatchers.Main) {
+            delay(1000)
+        }
+    }
+
     private suspend fun makeProgressDialog(): ProgressDialog {
         return withContext(Dispatchers.Main) {
             val progress = ProgressDialog(context)
-//            progress.setProgressStyle(ProgressDialog.STYLE_SPINNER)
-//            progress.setTitle(getString(R.string.download_weather_progress_title))
             progress.setMessage(getString(R.string.download_weather_progress_message))
             progress.show()
 
