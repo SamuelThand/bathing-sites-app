@@ -2,6 +2,8 @@ package se.miun.sath2102.dt031g.bathingsites
 
 import android.app.ProgressDialog
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -121,11 +123,14 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             R.id.add_bathing_site_menu_show_weather -> {
                 launch {
                     if (getWeatherData()) {
-//                        val bundle = Bundle()
-//                        bundle.putString("weatherData", weatherData.toString())
-//                        val dialog = WeatherDialogFragment()
-//                        dialog.arguments = bundle
-                        val dialog = WeatherDialogFragment.newInstance(weatherData.toString())
+
+                        val iconCode = JSONObject(weatherData).getJSONArray("weather")
+                            .getJSONObject(0).getString("icon")
+
+                        val weatherIcon: Bitmap = downloadWeatherIcon(iconCode)
+
+                        val dialog = WeatherDialogFragment.newInstance(weatherData, weatherIcon)
+
                         dialog.show(childFragmentManager, "WeatherFragment")
                     }
                 }
@@ -142,6 +147,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
+//    TODO fixa felhantering om det inte finns nån data att hämta
     private suspend fun getWeatherData(): Boolean {
 
         return withContext(Dispatchers.IO) {
@@ -187,6 +193,30 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             progress.show()
 
             return@withContext progress
+        }
+    }
+
+    private suspend fun downloadWeatherIcon(queryString: String): Bitmap {
+        return withContext(Dispatchers.IO) {
+                val iconURL = getString(R.string.icon_url)
+                val queryURL = "$iconURL$queryString.png"
+
+
+                println(queryURL)
+                //TODO Translate spaces, åäö to url format
+
+            try {
+                val iconConnection = URL(queryURL).openConnection()
+                iconConnection.connect()
+
+                iconConnection.getInputStream().use { input ->
+                    return@withContext BitmapFactory.decodeStream(input)
+                }
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error downloading $queryString: $e")
+                return@withContext BitmapFactory.decodeResource(resources, R.drawable.ic_error)
+            }
         }
     }
 
