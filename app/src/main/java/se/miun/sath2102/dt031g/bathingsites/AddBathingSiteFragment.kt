@@ -3,7 +3,6 @@ package se.miun.sath2102.dt031g.bathingsites
 import android.app.ProgressDialog
 import android.content.Intent
 import android.os.Bundle
-import android.provider.Settings
 import android.util.Log
 import android.view.*
 import android.widget.EditText
@@ -12,10 +11,9 @@ import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
+import org.json.JSONObject
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentAddBathingSiteBinding
-import java.io.File
 import java.net.URL
-import java.net.URLConnection
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
@@ -35,6 +33,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     private var param2: String? = null
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
+    private lateinit var weatherData: String
     private val TAG = "AddBathingSiteFragment"
 
     private lateinit var job: Job
@@ -122,7 +121,11 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             R.id.add_bathing_site_menu_show_weather -> {
                 launch {
                     if (getWeatherData()) {
-                        val dialog = WeatherDialogFragment()
+//                        val bundle = Bundle()
+//                        bundle.putString("weatherData", weatherData.toString())
+//                        val dialog = WeatherDialogFragment()
+//                        dialog.arguments = bundle
+                        val dialog = WeatherDialogFragment.newInstance(weatherData.toString())
                         dialog.show(childFragmentManager, "WeatherFragment")
                     }
                 }
@@ -151,7 +154,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
             if (addressProvided && coordinatesProvided || coordinatesProvided) {
                 val progress = makeProgressDialog()
-                downloadWeatherData("lat=$lat&lon=$long")
+                weatherData = downloadWeatherData("lat=$lat&lon=$long")
                 delay(1000)
                 progress.dismiss()
 
@@ -159,7 +162,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
             } else if (addressProvided) {
                 val progress = makeProgressDialog()
-                downloadWeatherData("q=$address")
+                weatherData = downloadWeatherData("q=$address")
                 delay(1000)
                 progress.dismiss()
 
@@ -189,7 +192,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
 //            lat=13.3&lon=63.456
 //    address = Stockholm
-    private fun downloadWeatherData(queryString: String) {
+    private fun downloadWeatherData(queryString: String): String {
 
         context?.let { it ->
             val weatherURL = SettingsActivity.getWeatherURL(it)
@@ -206,14 +209,19 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
                 println(weatherString)
 
+                return weatherString
+
             } catch (e: Exception) {
                 Log.e(TAG, "Error downloading $queryString: $e")
+                return "error"
             }
 
             //TODO öppna inputstream och läs svaret som en sträng, konvertera till JSON
             // TODO Visa ut datan eller printat ut meddelandet att datan inte kunde hämtas
 
         }
+
+        return ""
     }
 
     private fun validateInput() {
@@ -225,7 +233,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
             if (required) {
                 if (field.text.isEmpty()) {
-                    field.error = "${fieldName} is required."
+                    field.error = "$fieldName is required."
                 }
             } else {
                 field.error = null
