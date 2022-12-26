@@ -106,6 +106,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        println("Onoptionsitemselected")
         return when (item.itemId) {
             R.id.add_bathing_site_menu_clear -> {
                 clearForm()
@@ -120,29 +121,31 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 true
             }
             R.id.add_bathing_site_menu_show_weather -> {
-
-                // Visa bara fragment om hämtningen var successful
-                // TODO kör hanteringen av knapptryckningen i coroutine på nått sätt utan att låsa UI
-
-                if (runBlocking { getWeatherData() }) {
-                    val dialog = WeatherDialogFragment()
-                    dialog.show(childFragmentManager, "WeatherFragment")
-                    true
-                } else {
-                    return false
+                println("showweather")
+                launch {
+                    println("Launching coroutine")
+                    if (getWeatherData()) {
+                        val dialog = WeatherDialogFragment()
+                        println("showing dialog")
+                        dialog.show(childFragmentManager, "WeatherFragment")
+                    }
                 }
-
+                true
             }
+
             R.id.add_bathing_site_menu_settings -> {
                 val intent = Intent(activity, SettingsActivity::class.java)
                 activity?.startActivity(intent)
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
 
     private suspend fun getWeatherData(): Boolean {
+
+        println("getweatherdata")
 
         val address = binding.address.text
         val lat = binding.latitude.text
@@ -155,7 +158,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             job = launch (Dispatchers.IO) {
                 val progress = makeProgressDialog()
                 downloadWeatherData("lat=$lat&lon=$long")
-                delayProgress()
+                delay(1000)
                 progress.dismiss()
             }
 
@@ -183,13 +186,10 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
     }
 
-    private suspend fun delayProgress() {
-        withContext(Dispatchers.Main) {
-            delay(1000)
-        }
-    }
-
     private suspend fun makeProgressDialog(): ProgressDialog {
+
+        println("makeProgressDialog")
+
         return withContext(Dispatchers.Main) {
             val progress = ProgressDialog(context)
             progress.setMessage(getString(R.string.download_weather_progress_message))
