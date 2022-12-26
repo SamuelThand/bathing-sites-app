@@ -106,7 +106,6 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        println("Onoptionsitemselected")
         return when (item.itemId) {
             R.id.add_bathing_site_menu_clear -> {
                 clearForm()
@@ -121,12 +120,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 true
             }
             R.id.add_bathing_site_menu_show_weather -> {
-                println("showweather")
                 launch {
-                    println("Launching coroutine")
                     if (getWeatherData()) {
                         val dialog = WeatherDialogFragment()
-                        println("showing dialog")
                         dialog.show(childFragmentManager, "WeatherFragment")
                     }
                 }
@@ -145,50 +141,42 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
     private suspend fun getWeatherData(): Boolean {
 
-        println("getweatherdata")
+        return withContext(Dispatchers.IO) {
 
-        val address = binding.address.text
-        val lat = binding.latitude.text
-        val long = binding.longitude.text
-        val addressProvided: Boolean = address.isNotEmpty()
-        val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
+            val address = binding.address.text
+            val lat = binding.latitude.text
+            val long = binding.longitude.text
+            val addressProvided: Boolean = address.isNotEmpty()
+            val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
 
-//      TODO progressbar, sen starta weatherdialogfragment med väderdatan
-        if (addressProvided && coordinatesProvided) {
-            job = launch (Dispatchers.IO) {
+            if (addressProvided && coordinatesProvided || coordinatesProvided) {
                 val progress = makeProgressDialog()
                 downloadWeatherData("lat=$lat&lon=$long")
                 delay(1000)
                 progress.dismiss()
-            }
 
-            job.join()
-            return true
+                return@withContext true
 
-        } else if (coordinatesProvided) {
-            launch (Dispatchers.IO) {
-                downloadWeatherData("lat=$lat&lon=$long")
-            }
-            return true
-        } else if (addressProvided) {
-            launch (Dispatchers.IO) {
+            } else if (addressProvided) {
+                val progress = makeProgressDialog()
                 downloadWeatherData("q=$address")
+                delay(1000)
+                progress.dismiss()
+
+                return@withContext true
+
+            } else {
+                val cantGetWeatherInfoSnackbar = Snackbar.make(binding.root, R.string.cant_download_weather_data,
+                    BaseTransientBottomBar.LENGTH_LONG
+                )
+                cantGetWeatherInfoSnackbar.show()
+
+                return@withContext false
             }
-            return true
-        } else {
-            val cantGetWeatherInfoSnackbar = Snackbar.make(binding.root, R.string.cant_download_weather_data,
-                BaseTransientBottomBar.LENGTH_LONG
-            )
-            cantGetWeatherInfoSnackbar.show()
-
-            return false
         }
-
     }
 
     private suspend fun makeProgressDialog(): ProgressDialog {
-
-        println("makeProgressDialog")
 
         return withContext(Dispatchers.Main) {
             val progress = ProgressDialog(context)
@@ -200,6 +188,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 //            lat=13.3&lon=63.456
+//    address = Stockholm
     private fun downloadWeatherData(queryString: String) {
 
         context?.let { it ->
