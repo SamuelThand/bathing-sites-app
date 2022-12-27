@@ -113,6 +113,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 validateInput()
                 if (completeForm()) {
                     displayBathingSiteInfo(buildInfoString())
+
+
+
+
+
+
                 }
                 true
             }
