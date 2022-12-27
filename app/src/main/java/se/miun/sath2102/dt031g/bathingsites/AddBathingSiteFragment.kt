@@ -147,7 +147,6 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-//    TODO fixa felhantering om det inte finns nån data att hämta
     private suspend fun getWeatherData(): Boolean {
 
         return withContext(Dispatchers.IO) {
@@ -164,7 +163,21 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 delay(1000)
                 progress.dismiss()
 
-                return@withContext true
+
+                val statusCode = JSONObject(weatherData).get("cod")
+
+                if (statusCode != 200) {
+                    val errorMessage = (JSONObject(weatherData).get("message") as String)
+                        .replaceFirstChar { firstChar -> firstChar.uppercase() }
+                    val errorSnackBar = Snackbar.make(binding.name, errorMessage, BaseTransientBottomBar.LENGTH_LONG)
+                    errorSnackBar.show()
+
+                    return@withContext false
+                } else {
+
+                    return@withContext true
+                }
+
 
             } else if (addressProvided) {
                 val progress = makeProgressDialog()
@@ -172,7 +185,19 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 delay(1000)
                 progress.dismiss()
 
-                return@withContext true
+                val statusCode = JSONObject(weatherData).get("cod")
+
+                if (statusCode != 200) {
+                    val errorMessage = (JSONObject(weatherData).get("message") as String)
+                        .replaceFirstChar { firstChar -> firstChar.uppercase() }
+                    val errorSnackBar = Snackbar.make(binding.name, errorMessage, BaseTransientBottomBar.LENGTH_LONG)
+                    errorSnackBar.show()
+
+                    return@withContext false
+
+                } else {
+                    return@withContext true
+                }
 
             } else {
                 val cantGetWeatherInfoSnackbar = Snackbar.make(binding.root, R.string.cant_download_weather_data,
