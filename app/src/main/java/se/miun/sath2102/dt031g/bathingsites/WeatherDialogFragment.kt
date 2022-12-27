@@ -6,12 +6,8 @@ import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
 import androidx.fragment.app.Fragment
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
 import androidx.fragment.app.DialogFragment
 import org.json.JSONObject
-import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentWeatherDialogBinding
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -27,7 +23,6 @@ class WeatherDialogFragment : DialogFragment() {
     // TODO: Rename and change types of parameters
     private var weatherData: JSONObject? = null
     private var weatherIcon: Bitmap? = null
-    private lateinit var binding: FragmentWeatherDialogBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,15 +31,6 @@ class WeatherDialogFragment : DialogFragment() {
             weatherIcon = it.getParcelable(ARG_WEATHER_ICON)
         }
     }
-
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-        binding = FragmentWeatherDialogBinding.inflate(inflater, container, false)
-        return binding.root
-    }
-
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val weatherDescription = weatherData?.getJSONArray("weather")?.getJSONObject(0)
