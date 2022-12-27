@@ -19,7 +19,6 @@ import java.net.URL
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
-// TODO: Fixa scrollbar
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
 private const val ARG_PARAM1 = "param1"
 private const val ARG_PARAM2 = "param2"
@@ -37,7 +36,6 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     private lateinit var inputFields: MutableMap<EditText, Boolean>
     private lateinit var weatherData: String
     private val TAG = "AddBathingSiteFragment"
-
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
@@ -81,8 +79,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
+    ): View {
         binding = FragmentAddBathingSiteBinding.inflate(inflater, container, false)
 
         // True if field is required, false if not
@@ -97,13 +94,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         )
 
         setBathingSiteDateToToday()
-
         return binding.root
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
-        inflater.inflate(R.menu.add_bathing_site_view, menu)
+        inflater.inflate(R.menu.add_bathing_site_view_menu, menu)
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -122,15 +118,11 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             }
             R.id.add_bathing_site_menu_show_weather -> {
                 launch {
-                    if (getWeatherData()) {
-
+                    if (validateLocationData()) {
                         val iconCode = JSONObject(weatherData).getJSONArray("weather")
                             .getJSONObject(0).getString("icon")
-
                         val weatherIcon: Bitmap = downloadWeatherIcon(iconCode)
-
                         val dialog = WeatherDialogFragment.newInstance(weatherData, weatherIcon)
-
                         dialog.show(childFragmentManager, "WeatherFragment")
                     }
                 }
@@ -147,7 +139,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private suspend fun getWeatherData(): Boolean {
+    private suspend fun validateLocationData(): Boolean {
 
         return withContext(Dispatchers.IO) {
 
@@ -158,60 +150,45 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
 
             if (addressProvided && coordinatesProvided || coordinatesProvided) {
-                val progress = makeProgressDialog()
-                weatherData = downloadWeatherData("lat=$lat&lon=$long")
-                delay(1000)
-                progress.dismiss()
 
+                val validWeatherData = getWeatherData("lat=$lat&lon=$long")
 
-                val statusCode = JSONObject(weatherData).get("cod")
-
-                if (statusCode != 200) {
-                    val errorMessage = (JSONObject(weatherData).get("message") as String)
-                        .replaceFirstChar { firstChar -> firstChar.uppercase() }
-                    val errorSnackBar = Snackbar.make(binding.name, errorMessage, BaseTransientBottomBar.LENGTH_LONG)
-                    errorSnackBar.show()
-
+                if (!validWeatherData) {
+                    displayErrorSnackbar(createErrorMessage())
                     return@withContext false
                 } else {
-
                     return@withContext true
                 }
 
-
             } else if (addressProvided) {
-                val progress = makeProgressDialog()
-                weatherData = downloadWeatherData("q=$address")
-                delay(1000)
-                progress.dismiss()
 
-                val statusCode = JSONObject(weatherData).get("cod")
+                val validWeatherData = getWeatherData("q=$address")
 
-                if (statusCode != 200) {
-                    val errorMessage = (JSONObject(weatherData).get("message") as String)
-                        .replaceFirstChar { firstChar -> firstChar.uppercase() }
-                    val errorSnackBar = Snackbar.make(binding.name, errorMessage, BaseTransientBottomBar.LENGTH_LONG)
-                    errorSnackBar.show()
-
+                if (!validWeatherData) {
+                    displayErrorSnackbar(createErrorMessage())
                     return@withContext false
-
                 } else {
                     return@withContext true
                 }
 
             } else {
-                val cantGetWeatherInfoSnackbar = Snackbar.make(binding.root, R.string.cant_download_weather_data,
-                    BaseTransientBottomBar.LENGTH_LONG
-                )
-                cantGetWeatherInfoSnackbar.show()
-
+                displayErrorSnackbar(getString(R.string.cant_download_weather_data))
                 return@withContext false
             }
         }
     }
 
-    private suspend fun makeProgressDialog(): ProgressDialog {
+    private suspend fun getWeatherData(queryString: String): Boolean {
+        val progress = makeProgressDialog()
+        weatherData = downloadWeatherData(queryString)
+        delay(1000)
+        progress.dismiss()
 
+        val statusCode = JSONObject(weatherData).get("cod")
+        return statusCode == 200
+    }
+
+    private suspend fun makeProgressDialog(): ProgressDialog {
         return withContext(Dispatchers.Main) {
             val progress = ProgressDialog(context)
             progress.setMessage(getString(R.string.download_weather_progress_message))
@@ -221,19 +198,25 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
+    private fun displayErrorSnackbar(messageToDisplay: String) {
+        val errorSnackBar = Snackbar.make(binding.root, messageToDisplay, BaseTransientBottomBar.LENGTH_LONG)
+        errorSnackBar.show()
+    }
+
+    private fun createErrorMessage(): String {
+        return (JSONObject(weatherData).get("message") as String).replaceFirstChar {
+                firstChar -> firstChar.uppercase()
+        }
+    }
+
     private suspend fun downloadWeatherIcon(queryString: String): Bitmap {
         return withContext(Dispatchers.IO) {
                 val iconURL = getString(R.string.icon_url)
                 val queryURL = "$iconURL$queryString.png"
 
-
-                println(queryURL)
-                //TODO Translate spaces, åäö to url format
-
             try {
                 val iconConnection = URL(queryURL).openConnection()
                 iconConnection.connect()
-
                 iconConnection.getInputStream().use { input ->
                     return@withContext BitmapFactory.decodeStream(input)
                 }
@@ -245,35 +228,21 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-//            lat=13.3&lon=63.456
-//    address = Stockholm
     private fun downloadWeatherData(queryString: String): String {
-
         context?.let { it ->
             val weatherURL = SettingsActivity.getWeatherURL(it)
             val queryURL = "$weatherURL?$queryString"
-
-            //TODO Translate spaces, åäö to url format
 
             try {
                 val weatherConnection = URL(queryURL).openConnection()
                 weatherConnection.connect()
 
-                val weatherString: String = weatherConnection.getInputStream()
-                    .bufferedReader().use { it.readText() }
-
-                println(weatherString)
-
-                return weatherString
-
+                return weatherConnection.getInputStream().bufferedReader().use { it.readText() }
             } catch (e: Exception) {
                 Log.e(TAG, "Error downloading $queryString: $e")
+
                 return "error"
             }
-
-            //TODO öppna inputstream och läs svaret som en sträng, konvertera till JSON
-            // TODO Visa ut datan eller printat ut meddelandet att datan inte kunde hämtas
-
         }
 
         return ""

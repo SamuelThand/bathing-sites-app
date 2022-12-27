@@ -4,20 +4,20 @@
 
     <item
         android:id="@+id/add_bathing_site_menu_clear"
-        android:title="CLEAR"
-        app:showAsAction="always"/>
+        android:title="@string/add_bathing_site_menu_clear"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/add_bathing_site_menu_save"
-        android:title="SAVE"
-        app:showAsAction="always"/>
+        android:title="@string/add_bathing_site_menu_save"
+        app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/add_bathing_site_menu_show_weather"
-        android:title="Show Weather" />
+        android:title="@string/add_bathing_site_menu_show_weather" />
 
     <item
         android:id="@+id/add_bathing_site_menu_settings"
-        android:title="Settings" />
+        android:title="@string/title_activity_settings" />
 
 </menu>

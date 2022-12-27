@@ -15,6 +15,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        setFloatingActionButtonOnClickListener()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -31,6 +32,13 @@ class MainActivity : AppCompatActivity() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun setFloatingActionButtonOnClickListener() {
+        binding.addBathingSiteButton.setOnClickListener {
+            val intent = Intent(this, AddBathingSiteActivity::class.java)
+            startActivity(intent)
         }
     }
 

@@ -22,7 +22,7 @@ class BathingSitesView @JvmOverloads constructor(
 
     @SuppressLint("SetTextI18n")
     fun setText() {
-        binding.textView.text = "${storedBathingSites} ${context.getString(R.string.bathing_sites_text)}"
+        binding.textView.text = "$storedBathingSites ${context.getString(R.string.bathing_sites_text)}"
     }
 
     fun incrementStoredBathingSites() {

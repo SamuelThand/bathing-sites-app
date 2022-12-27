@@ -1,12 +1,10 @@
 package se.miun.sath2102.dt031g.bathingsites
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import se.miun.sath2102.dt031g.bathingsites.databinding.BathingSitesViewBinding
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentBathingSitesBinding
 
 // TODO: Rename parameter arguments, choose names that match
@@ -36,7 +34,7 @@ class BathingSitesFragment : Fragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
 
         binding = FragmentBathingSitesBinding.inflate(inflater, container, false)
         setBathingSiteViewOnClickListener()
@@ -68,9 +66,6 @@ class BathingSitesFragment : Fragment() {
         binding.bathingSitesView.setOnClickListener {
             binding.bathingSitesView.incrementStoredBathingSites()
             binding.bathingSitesView.setText()
-
-            val intent = Intent(activity, AddBathingSiteActivity::class.java)
-            activity?.startActivity(intent)
         }
     }
 }

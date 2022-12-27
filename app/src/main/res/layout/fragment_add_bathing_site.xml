@@ -9,11 +9,12 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        tools:ignore="UselessParent">
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="wrap_content">
 
             <EditText
                 android:id="@+id/name"
@@ -34,7 +35,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:hint="@string/description_text"
-                android:inputType="text"
+                android:inputType="textMultiLine|textLongMessage"
                 android:importantForAutofill="no"
                 android:textColorHint="#78909C"
                 app:layout_constraintHeight_percent="0.15"
@@ -49,7 +50,7 @@
                 android:layout_height="0dp"
                 android:hint="@string/address_text"
                 android:importantForAutofill="no"
-                android:inputType="text"
+                android:inputType="textPostalAddress"
                 android:textColorHint="#78909C"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintHeight_percent="0.15"

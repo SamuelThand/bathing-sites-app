@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Icon
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -41,13 +40,8 @@ class WeatherDialogFragment : DialogFragment() {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
-
+    ): View {
         binding = FragmentWeatherDialogBinding.inflate(inflater, container, false)
-
-        println("param1")
-        println(weatherData?.getJSONArray("weather")?.getJSONObject(0)?.get("description"))
-
         return binding.root
     }
 
