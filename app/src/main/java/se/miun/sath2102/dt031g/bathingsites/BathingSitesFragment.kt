@@ -1,5 +1,6 @@
 package se.miun.sath2102.dt031g.bathingsites
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -70,8 +71,11 @@ class BathingSitesFragment : Fragment() {
     //TODO update and implement open new activity
     private fun setBathingSiteViewOnClickListener() {
         binding.bathingSitesView.setOnClickListener {
-            binding.bathingSitesView.incrementStoredBathingSites()
-            binding.bathingSitesView.setText()
+//            binding.bathingSitesView.displayBathingSites()
+//            binding.bathingSitesView.setText()
+
+            val intent = Intent(context, DisplayBathingSitesActivity::class.java)
+            startActivity(intent)
         }
     }
 }

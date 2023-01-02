@@ -5,7 +5,6 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import androidx.constraintlayout.widget.ConstraintLayout
-import androidx.room.Room
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -37,7 +36,9 @@ class BathingSitesView @JvmOverloads constructor(
     }
 
     //TODO rename and implement new activity open
-    fun incrementStoredBathingSites() {
-//        storedBathingSites ++
-    }
+//    fun displayBathingSites() {
+////        storedBathingSites ++
+//        val intent = Intent(this, AddBathingSiteActivity::class.java)
+//        startActivity(intent)
+//    }
 }
