@@ -21,6 +21,8 @@
     displaying weather information.</string>
     <string name="download_weather_progress_message">Getting current weather..</string>
     <string name="icon_url">https://openweathermap.org/img/w/</string>
+    <string name="bathing_site_already_exists_error">A bathing site with these coordinates already exists.</string>
+    <string name="unexpected_error">An unexpected error occurred when saving bathing site.</string>
 
     <!-- SettingsActivity -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

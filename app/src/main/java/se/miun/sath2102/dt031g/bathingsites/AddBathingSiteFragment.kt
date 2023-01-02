@@ -2,6 +2,7 @@ package se.miun.sath2102.dt031g.bathingsites
 
 import android.app.ProgressDialog
 import android.content.Intent
+import android.database.sqlite.SQLiteConstraintException
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Bundle
@@ -121,6 +122,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 determineRequiredFields()
                 validateInput()
                 if (completeForm()) {
+                    // TODO ta bort och rensa onödig kod
 //                    displayBathingSiteInfo(buildInfoString())
                     val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
 
@@ -131,32 +133,33 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                     val long = binding.longitude.text
                     val waterTemp = binding.waterTemp.text
                     val waterTempDate = binding.waterTempDate.text
+                    val grade = binding.grade
 
                     launch (Dispatchers.IO) {
 
-                        bathingSiteDao.insertAll(BathingSite(
-                            id = null,
-                            name = name.toString(),
-                            description = if (description.isEmpty()) null else description.toString(),
-                            address = if (address.isEmpty()) null else address.toString(),
-                            // error handling?
-                            latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
-                            longitude = if (long.isEmpty()) null else long.toString().toDouble(),
-                            waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
-                            waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString()
-                        // TODO grade
-                        ))
-
-                        println("after save")
-
-                        println(bathingSiteDao.getAll().toString())
-
+//                        TODO strängare validering?
+                        try {
+                            bathingSiteDao.insertAll(BathingSite(
+                                id = null,
+                                name = name.toString(),
+                                description = if (description.isEmpty()) null else description.toString(),
+                                address = if (address.isEmpty()) null else address.toString(),
+                                latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
+                                longitude = if (long.isEmpty()) null else long.toString().toDouble(),
+                                waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
+                                waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString(),
+                                grade = grade.rating
+                            ))
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error inserting entity: $e")
+                            when(e) {
+                                is SQLiteConstraintException ->
+                                    displayErrorSnackbar(getString(R.string.bathing_site_already_exists_error))
+                                else ->
+                                    displayErrorSnackbar(getString(R.string.unexpected_error))
+                            }
+                        }
                     }
-
-
-
-
-
                 }
                 true
             }
