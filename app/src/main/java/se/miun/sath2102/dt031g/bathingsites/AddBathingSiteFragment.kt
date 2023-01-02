@@ -10,6 +10,7 @@ import android.view.*
 import android.widget.EditText
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.room.Room
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.*
@@ -35,6 +36,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
     private lateinit var weatherData: String
+    private lateinit var bathingsiteDatabase: BathingsiteDatabase
     private val TAG = "AddBathingSiteFragment"
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
@@ -66,6 +68,13 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         arguments?.let {
             param1 = it.getString(ARG_PARAM1)
             param2 = it.getString(ARG_PARAM2)
+        }
+
+        context?.let {
+            bathingsiteDatabase = Room.databaseBuilder(
+                it,
+                BathingsiteDatabase::class.java, "Bathingsites"
+            ).build()
         }
 
         job = Job()
@@ -112,8 +121,37 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 determineRequiredFields()
                 validateInput()
                 if (completeForm()) {
-                    displayBathingSiteInfo(buildInfoString())
+//                    displayBathingSiteInfo(buildInfoString())
+                    val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
 
+                    val name = binding.name.text
+                    val description = binding.description.text
+                    val address = binding.address.text
+                    val lat = binding.latitude.text
+                    val long = binding.longitude.text
+                    val waterTemp = binding.waterTemp.text
+                    val waterTempDate = binding.waterTempDate.text
+
+                    launch (Dispatchers.IO) {
+
+                        bathingSiteDao.insertAll(BathingSite(
+                            id = null,
+                            name = name.toString(),
+                            description = if (description.isEmpty()) null else description.toString(),
+                            address = if (address.isEmpty()) null else address.toString(),
+                            // error handling?
+                            latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
+                            longitude = if (long.isEmpty()) null else long.toString().toDouble(),
+                            waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
+                            waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString()
+                        // TODO grade
+                        ))
+
+                        println("after save")
+
+                        println(bathingSiteDao.getAll().toString())
+
+                    }
 
 
 

@@ -18,6 +18,9 @@ interface BathingSiteDao {
 //            "last_name LIKE :last LIMIT 1")
 //    fun findByName(first: String, last: String): User
 
+//    @Insert(onConflict = OnConflictStrategy.ABORT)
+//    fun insertAll(vararg bathingSites: BathingSite)
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertAll(vararg bathingSites: BathingSite)
 
