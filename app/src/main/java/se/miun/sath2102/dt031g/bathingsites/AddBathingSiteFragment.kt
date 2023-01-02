@@ -114,20 +114,35 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
+
             R.id.add_bathing_site_menu_clear -> {
                 clearForm()
-                true
+                return true
             }
+
             R.id.add_bathing_site_menu_save -> {
                 determineRequiredFields()
                 validateInput()
                 if (completeForm()) {
                     launch {
-                        saveBathingSiteToDatabase()
+                        try {
+                            saveBathingSiteToDatabase()
+                            displaySnackbar(getString(R.string.bathing_site_saved))
+                        } catch (e: Exception) {
+                            Log.e(TAG, "Error saving entity to database: $e")
+                            when(e) {
+                                is SQLiteConstraintException ->
+                                    displaySnackbar(getString(R.string.bathing_site_already_exists_error))
+                                else ->
+                                    displaySnackbar(getString(R.string.unexpected_error))
+                            }
+                        }
                     }
                 }
-                true
+
+                return true
             }
+
             R.id.add_bathing_site_menu_show_weather -> {
                 launch {
                     if (validateLocationData()) {
@@ -138,21 +153,24 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                         dialog.show(childFragmentManager, "WeatherFragment")
                     }
                 }
-                true
+
+                return true
             }
 
             R.id.add_bathing_site_menu_settings -> {
                 val intent = Intent(activity, SettingsActivity::class.java)
                 activity?.startActivity(intent)
-                true
+
+                return true
             }
 
             else -> super.onOptionsItemSelected(item)
         }
     }
 
-    private suspend fun saveBathingSiteToDatabase(): Boolean {
-        return withContext(Dispatchers.IO) {
+    @Throws(SQLiteConstraintException::class)
+    private suspend fun saveBathingSiteToDatabase() {
+        withContext(Dispatchers.IO) {
 
             val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
 
@@ -165,33 +183,17 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             val waterTempDate = binding.waterTempDate.text
             val grade = binding.grade
 
-            try {
-                bathingSiteDao.insertAll(BathingSite(
-                    id = null,
-                    name = name.toString(),
-                    description = if (description.isEmpty()) null else description.toString(),
-                    address = if (address.isEmpty()) null else address.toString(),
-                    latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
-                    longitude = if (long.isEmpty()) null else long.toString().toDouble(),
-                    waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
-                    waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString(),
-                    grade = grade.rating
-                ))
-
-            } catch (e: Exception) {
-                Log.e(TAG, "Error inserting entity: $e")
-                when(e) {
-                    is SQLiteConstraintException ->
-                        displayErrorSnackbar(getString(R.string.bathing_site_already_exists_error))
-                    else ->
-                        displayErrorSnackbar(getString(R.string.unexpected_error))
-                }
-
-                return@withContext false
-            }
-
-            displayErrorSnackbar("OK")
-            return@withContext true
+            bathingSiteDao.insertAll(BathingSite(
+                id = null,
+                name = name.toString(),
+                description = if (description.isEmpty()) null else description.toString(),
+                address = if (address.isEmpty()) null else address.toString(),
+                latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
+                longitude = if (long.isEmpty()) null else long.toString().toDouble(),
+                waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
+                waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString(),
+                grade = grade.rating
+            ))
         }
     }
 
@@ -210,7 +212,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 val validWeatherData = getWeatherData("lat=$lat&lon=$long")
 
                 if (!validWeatherData) {
-                    displayErrorSnackbar(createErrorMessage())
+                    displaySnackbar(createWeatherDataErrorMessage())
                     return@withContext false
                 } else {
                     return@withContext true
@@ -221,14 +223,14 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 val validWeatherData = getWeatherData("q=$address")
 
                 if (!validWeatherData) {
-                    displayErrorSnackbar(createErrorMessage())
+                    displaySnackbar(createWeatherDataErrorMessage())
                     return@withContext false
                 } else {
                     return@withContext true
                 }
 
             } else {
-                displayErrorSnackbar(getString(R.string.cant_download_weather_data))
+                displaySnackbar(getString(R.string.cant_download_weather_data))
                 return@withContext false
             }
         }
@@ -254,12 +256,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private fun displayErrorSnackbar(messageToDisplay: String) {
-        val errorSnackBar = Snackbar.make(binding.root, messageToDisplay, BaseTransientBottomBar.LENGTH_LONG)
-        errorSnackBar.show()
+    private fun displaySnackbar(messageToDisplay: String) {
+        val snackBar = Snackbar.make(binding.root, messageToDisplay, BaseTransientBottomBar.LENGTH_LONG)
+        snackBar.show()
     }
 
-    private fun createErrorMessage(): String {
+    private fun createWeatherDataErrorMessage(): String {
         return (JSONObject(weatherData).get("message") as String).replaceFirstChar {
                 firstChar -> firstChar.uppercase()
         }
