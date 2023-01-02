@@ -42,6 +42,11 @@ class BathingSitesFragment : Fragment() {
         return binding.root
     }
 
+    override fun onResume() {
+        binding.bathingSitesView.setText()
+        super.onResume()
+    }
+
     companion object {
         /**
          * Use this factory method to create a new instance of
@@ -62,6 +67,7 @@ class BathingSitesFragment : Fragment() {
             }
     }
 
+    //TODO update and implement open new activity
     private fun setBathingSiteViewOnClickListener() {
         binding.bathingSitesView.setOnClickListener {
             binding.bathingSitesView.incrementStoredBathingSites()

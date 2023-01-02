@@ -72,10 +72,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
 
         context?.let {
-            bathingsiteDatabase = Room.databaseBuilder(
-                it,
-                BathingsiteDatabase::class.java, "Bathingsites"
-            ).build()
+            bathingsiteDatabase = BathingsiteDatabase.getInstance(it)
         }
 
         job = Job()
@@ -128,6 +125,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                         try {
                             saveBathingSiteToDatabase()
                             displaySnackbar(getString(R.string.bathing_site_saved))
+                            delay(1000)
+                            clearForm()
+                            activity?.finish()
                         } catch (e: Exception) {
                             Log.e(TAG, "Error saving entity to database: $e")
                             when(e) {
