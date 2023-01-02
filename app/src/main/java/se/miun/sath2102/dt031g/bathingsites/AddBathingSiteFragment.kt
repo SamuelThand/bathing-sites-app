@@ -122,43 +122,8 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 determineRequiredFields()
                 validateInput()
                 if (completeForm()) {
-                    // TODO ta bort och rensa onödig kod
-//                    displayBathingSiteInfo(buildInfoString())
-                    val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
-
-                    val name = binding.name.text
-                    val description = binding.description.text
-                    val address = binding.address.text
-                    val lat = binding.latitude.text
-                    val long = binding.longitude.text
-                    val waterTemp = binding.waterTemp.text
-                    val waterTempDate = binding.waterTempDate.text
-                    val grade = binding.grade
-
-                    launch (Dispatchers.IO) {
-
-//                        TODO strängare validering?
-                        try {
-                            bathingSiteDao.insertAll(BathingSite(
-                                id = null,
-                                name = name.toString(),
-                                description = if (description.isEmpty()) null else description.toString(),
-                                address = if (address.isEmpty()) null else address.toString(),
-                                latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
-                                longitude = if (long.isEmpty()) null else long.toString().toDouble(),
-                                waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
-                                waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString(),
-                                grade = grade.rating
-                            ))
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error inserting entity: $e")
-                            when(e) {
-                                is SQLiteConstraintException ->
-                                    displayErrorSnackbar(getString(R.string.bathing_site_already_exists_error))
-                                else ->
-                                    displayErrorSnackbar(getString(R.string.unexpected_error))
-                            }
-                        }
+                    launch {
+                        saveBathingSiteToDatabase()
                     }
                 }
                 true
@@ -183,6 +148,50 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             }
 
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private suspend fun saveBathingSiteToDatabase(): Boolean {
+        return withContext(Dispatchers.IO) {
+
+            val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
+
+            val name = binding.name.text
+            val description = binding.description.text
+            val address = binding.address.text
+            val lat = binding.latitude.text
+            val long = binding.longitude.text
+            val waterTemp = binding.waterTemp.text
+            val waterTempDate = binding.waterTempDate.text
+            val grade = binding.grade
+
+            try {
+                bathingSiteDao.insertAll(BathingSite(
+                    id = null,
+                    name = name.toString(),
+                    description = if (description.isEmpty()) null else description.toString(),
+                    address = if (address.isEmpty()) null else address.toString(),
+                    latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
+                    longitude = if (long.isEmpty()) null else long.toString().toDouble(),
+                    waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
+                    waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString(),
+                    grade = grade.rating
+                ))
+
+            } catch (e: Exception) {
+                Log.e(TAG, "Error inserting entity: $e")
+                when(e) {
+                    is SQLiteConstraintException ->
+                        displayErrorSnackbar(getString(R.string.bathing_site_already_exists_error))
+                    else ->
+                        displayErrorSnackbar(getString(R.string.unexpected_error))
+                }
+
+                return@withContext false
+            }
+
+            displayErrorSnackbar("OK")
+            return@withContext true
         }
     }
 
