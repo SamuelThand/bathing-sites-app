@@ -2,6 +2,7 @@ package se.miun.sath2102.dt031g.bathingsites
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -39,8 +40,22 @@ class DisplayBathingSitesActivity : AppCompatActivity(), RecyclerViewInterface, 
         setContentView(binding.root)
     }
 
+
     override fun onClick(position: Int) {
-        println(bathingSites.get(position).name)
+        val alertDialogBuilder = AlertDialog.Builder(this)
+        val clickedBathingSite = bathingSites[position]
+        alertDialogBuilder.setMessage(
+            "Name: ${clickedBathingSite.name}\n" +
+            "Description: ${clickedBathingSite.description}\n" +
+            "Address: ${clickedBathingSite.address}\n" +
+            "Longitude: ${clickedBathingSite.longitude}\n" +
+            "Latitude: ${clickedBathingSite.latitude}\n" +
+            "Grade: ${clickedBathingSite.grade}\n" +
+            "Water temp: ${clickedBathingSite.waterTemp}\n" +
+            "Date for temp: ${clickedBathingSite.waterTempDate}\n"
+        )
+        alertDialogBuilder.show()
     }
+
 
 }
