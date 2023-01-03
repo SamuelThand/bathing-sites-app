@@ -9,7 +9,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.EditText
-import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import com.google.android.material.snackbar.BaseTransientBottomBar
 import com.google.android.material.snackbar.Snackbar
@@ -35,12 +34,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     private var param2: String? = null
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
-    private lateinit var weatherData: String
     private lateinit var bathingsiteDatabase: BathingsiteDatabase
     private val TAG = "AddBathingSiteFragment"
     private lateinit var job: Job
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
+
 
     companion object {
         /**
@@ -62,6 +61,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             }
     }
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -77,15 +77,15 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         job = Job()
     }
 
+
     override fun onDestroy() {
         super.onDestroy()
         job.cancel()
     }
 
-    override fun onCreateView(
-        inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
+                              savedInstanceState: Bundle?): View {
         binding = FragmentAddBathingSiteBinding.inflate(inflater, container, false)
 
         // True if field is required, false if not
@@ -98,68 +98,37 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             Pair(binding.waterTemp, false),
             Pair(binding.waterTempDate, false),
         )
-
         setBathingSiteDateToToday()
+
         return binding.root
     }
+
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.add_bathing_site_view_menu, menu)
     }
 
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
-
             R.id.add_bathing_site_menu_clear -> {
                 clearForm()
                 return true
             }
-
             R.id.add_bathing_site_menu_save -> {
-                determineRequiredFields()
-                validateInput()
-                if (completeForm()) {
-                    launch {
-                        try {
-                            saveBathingSiteToDatabase()
-                            displaySnackbar(getString(R.string.bathing_site_saved))
-                            delay(1000)
-                            clearForm()
-                            activity?.finish()
-                        } catch (e: Exception) {
-                            Log.e(TAG, "Error saving entity to database: $e")
-                            when(e) {
-                                is SQLiteConstraintException ->
-                                    displaySnackbar(getString(R.string.bathing_site_already_exists_error))
-                                else ->
-                                    displaySnackbar(getString(R.string.unexpected_error))
-                            }
-                        }
-                    }
-                }
-
+                handleBathingSiteSave()
                 return true
             }
 
             R.id.add_bathing_site_menu_show_weather -> {
-                launch {
-                    if (validateLocationData()) {
-                        val iconCode = JSONObject(weatherData).getJSONArray("weather")
-                            .getJSONObject(0).getString("icon")
-                        val weatherIcon: Bitmap = downloadWeatherIcon(iconCode)
-                        val dialog = WeatherDialogFragment.newInstance(weatherData, weatherIcon)
-                        dialog.show(childFragmentManager, "WeatherFragment")
-                    }
-                }
-
+                handleBathingSiteShowWeather()
                 return true
             }
 
             R.id.add_bathing_site_menu_settings -> {
                 val intent = Intent(activity, SettingsActivity::class.java)
                 activity?.startActivity(intent)
-
                 return true
             }
 
@@ -167,12 +136,87 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
+
+    private fun handleBathingSiteSave() {
+        determineRequiredFields()
+        validateInput()
+        if (completeForm()) {
+            launch {
+                try {
+                    saveBathingSiteToDatabase()
+                    displaySnackbar(getString(R.string.bathing_site_saved))
+                    delay(1000)
+                    clearForm()
+                    activity?.finish()
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error saving entity to database: $e")
+                    when(e) {
+                        is SQLiteConstraintException ->
+                            displaySnackbar(getString(R.string.bathing_site_already_exists_error))
+                        else ->
+                            displaySnackbar(getString(R.string.unexpected_save_error))
+                    }
+                }
+            }
+        }
+    }
+
+
+    private fun determineRequiredFields() {
+        val addressText = binding.address.text
+        val latText = binding.latitude.text
+        val longText = binding.longitude.text
+
+        if (addressText.isNotEmpty()) {
+            inputFields[binding.latitude] = false
+            inputFields[binding.longitude] = false
+        } else if (latText.isNotEmpty() || longText.isNotEmpty()) {
+            inputFields[binding.address] = false
+        } else {
+            inputFields[binding.address] = true
+            inputFields[binding.latitude] = true
+            inputFields[binding.longitude] = true
+        }
+    }
+
+
+    private fun validateInput() {
+        inputFields.forEach {
+            val field = it.key
+            val fieldName = resources.getResourceName(field.id)
+                .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
+            val required: Boolean = it.value
+
+            if (required) {
+                if (field.text.isEmpty()) {
+                    field.error = "$fieldName is required."
+                }
+            } else {
+                field.error = null
+            }
+        }
+    }
+
+
+    private fun completeForm(): Boolean {
+        var completeForm = true
+        inputFields.forEach {
+            val field = it.key
+
+            if (field.error != null) {
+                completeForm = false
+            }
+        }
+
+        return completeForm
+    }
+
+
     @Throws(SQLiteConstraintException::class)
     private suspend fun saveBathingSiteToDatabase() {
         withContext(Dispatchers.IO) {
 
             val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
-
             val name = binding.name.text
             val description = binding.description.text
             val address = binding.address.text
@@ -196,54 +240,64 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private suspend fun validateLocationData(): Boolean {
 
-        return withContext(Dispatchers.IO) {
+    private fun clearForm() {
+        inputFields.forEach {
+            val field = it.key
+            field.text.clear()
+        }
+        binding.grade.rating = 0F
+        setBathingSiteDateToToday()
+    }
 
-            val address = binding.address.text
-            val lat = binding.latitude.text
-            val long = binding.longitude.text
-            val addressProvided: Boolean = address.isNotEmpty()
-            val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
 
-            if (addressProvided && coordinatesProvided || coordinatesProvided) {
+    private fun handleBathingSiteShowWeather() {
+        if (validateFormLocationInfo()) {
 
-                val validWeatherData = getWeatherData("lat=$lat&lon=$long")
+            launch {
+                val progress = makeProgressDialog()
+                try {
+                    val weatherJSON = getWeatherData()
+                    val statusCode = weatherJSON.get("cod")
 
-                if (!validWeatherData) {
-                    displaySnackbar(createWeatherDataErrorMessage())
-                    return@withContext false
-                } else {
-                    return@withContext true
+                    if (statusCode == 200) {
+                        val iconCode = weatherJSON.getJSONArray("weather")
+                            .getJSONObject(0).getString("icon")
+                        val weatherIcon = downloadWeatherIcon(iconCode)
+                        val dialog = WeatherDialogFragment.newInstance(weatherJSON.toString(), weatherIcon)
+                        dialog.show(childFragmentManager, "WeatherFragment")
+                    } else {
+                        val message = (weatherJSON.get("message") as String).replaceFirstChar {
+                                firstChar -> firstChar.uppercase()
+                        }
+                        displaySnackbar(message)
+                    }
+
+                } catch (e: Exception) {
+                    Log.e(TAG, "Error downloading weather data: $e")
+                    displaySnackbar(getString(R.string.unexpected_download_error))
+
+                } finally {
+                    progress.dismiss()
                 }
-
-            } else if (addressProvided) {
-
-                val validWeatherData = getWeatherData("q=$address")
-
-                if (!validWeatherData) {
-                    displaySnackbar(createWeatherDataErrorMessage())
-                    return@withContext false
-                } else {
-                    return@withContext true
-                }
-
-            } else {
-                displaySnackbar(getString(R.string.cant_download_weather_data))
-                return@withContext false
             }
+
+        } else {
+            displaySnackbar(getString(R.string.cant_download_weather_data))
         }
     }
 
-    private suspend fun getWeatherData(queryString: String): Boolean {
-        val progress = makeProgressDialog()
-        weatherData = downloadWeatherData(queryString)
-        delay(1000)
-        progress.dismiss()
 
-        val statusCode = JSONObject(weatherData).get("cod")
-        return statusCode == 200
+    private fun validateFormLocationInfo(): Boolean {
+        val address = binding.address.text
+        val lat = binding.latitude.text
+        val long = binding.longitude.text
+        val addressProvided: Boolean = address.isNotEmpty()
+        val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
+
+        return addressProvided || coordinatesProvided
     }
+
 
     private suspend fun makeProgressDialog(): ProgressDialog {
         return withContext(Dispatchers.Main) {
@@ -255,21 +309,43 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         }
     }
 
-    private fun displaySnackbar(messageToDisplay: String) {
-        val snackBar = Snackbar.make(binding.root, messageToDisplay, BaseTransientBottomBar.LENGTH_LONG)
-        snackBar.show()
+
+    private suspend fun getWeatherData(): JSONObject {
+        val address = binding.address.text
+        val lat = binding.latitude.text
+        val long = binding.longitude.text
+        val addressProvided: Boolean = address.isNotEmpty()
+        val coordinatesProvided: Boolean = lat.isNotEmpty() && long.isNotEmpty()
+
+        val queryString: String = if (addressProvided && coordinatesProvided || coordinatesProvided) {
+            "lat=$lat&lon=$long"
+        } else {
+            "q=$address"
+        }
+
+        val weatherData = downloadWeatherData(queryString) ?: ""
+        delay(1000)
+
+        return JSONObject(weatherData)
     }
 
-    private fun createWeatherDataErrorMessage(): String {
-        return (JSONObject(weatherData).get("message") as String).replaceFirstChar {
-                firstChar -> firstChar.uppercase()
+
+    private fun downloadWeatherData(queryString: String): String? {
+        return context?.let { it ->
+            val weatherURL = SettingsActivity.getWeatherURL(it)
+            val queryURL = "$weatherURL?$queryString"
+            val weatherConnection = URL(queryURL).openConnection()
+
+            weatherConnection.connect()
+            weatherConnection.getInputStream().bufferedReader().use { it.readText() }
         }
     }
 
+
     private suspend fun downloadWeatherIcon(queryString: String): Bitmap {
         return withContext(Dispatchers.IO) {
-                val iconURL = getString(R.string.icon_url)
-                val queryURL = "$iconURL$queryString.png"
+            val iconURL = getString(R.string.icon_url)
+            val queryURL = "$iconURL$queryString.png"
 
             try {
                 val iconConnection = URL(queryURL).openConnection()
@@ -279,116 +355,21 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
                 }
 
             } catch (e: Exception) {
-                Log.e(TAG, "Error downloading $queryString: $e")
+                Log.e(TAG, "Error downloading icon $queryString: $e")
                 return@withContext BitmapFactory.decodeResource(resources, R.drawable.ic_error)
             }
         }
     }
 
-    private fun downloadWeatherData(queryString: String): String {
-        context?.let { it ->
-            val weatherURL = SettingsActivity.getWeatherURL(it)
-            val queryURL = "$weatherURL?$queryString"
 
-            try {
-                val weatherConnection = URL(queryURL).openConnection()
-                weatherConnection.connect()
-
-                return weatherConnection.getInputStream().bufferedReader().use { it.readText() }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error downloading $queryString: $e")
-
-                return "error"
-            }
-        }
-
-        return ""
+    private fun displaySnackbar(messageToDisplay: String) {
+        val snackBar = Snackbar.make(binding.root, messageToDisplay, BaseTransientBottomBar.LENGTH_LONG)
+        snackBar.show()
     }
 
-    private fun validateInput() {
-        inputFields.forEach {
-            val field = it.key
-            val fieldName = resources.getResourceName(field.id)
-                .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
-            val required: Boolean = it.value
-
-            if (required) {
-                if (field.text.isEmpty()) {
-                    field.error = "$fieldName is required."
-                }
-            } else {
-                field.error = null
-            }
-        }
-    }
-
-    private fun determineRequiredFields() {
-        val addressText = binding.address.text
-        val latText = binding.latitude.text
-        val longText = binding.longitude.text
-
-        if (addressText.isNotEmpty()) {
-            inputFields[binding.latitude] = false
-            inputFields[binding.longitude] = false
-        } else if (latText.isNotEmpty() || longText.isNotEmpty()) {
-            inputFields[binding.address] = false
-        } else {
-            inputFields[binding.address] = true
-            inputFields[binding.latitude] = true
-            inputFields[binding.longitude] = true
-        }
-    }
-
-    private fun displayBathingSiteInfo(infoString: String) {
-            context?.let {
-                val alertDialogBuilder = AlertDialog.Builder(it)
-                alertDialogBuilder.setMessage(infoString)
-                alertDialogBuilder.show()
-            }
-    }
-
-    private fun completeForm(): Boolean {
-        var completeForm = true
-        inputFields.forEach {
-            val field = it.key
-
-            if (field.error != null) {
-                completeForm = false
-            }
-        }
-
-        return completeForm
-    }
-
-    private fun buildInfoString(): String {
-        var bathingSiteInfo = ""
-
-        inputFields.forEach {
-            val field = it.key
-            val fieldName = resources.getResourceName(field.id)
-                .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
-
-            bathingSiteInfo += "${fieldName}: ${field.text}\n"
-        }
-
-        val gradeField = binding.grade
-        val gradeFieldName = resources.getResourceName(binding.grade.id)
-            .split("/").last().replaceFirstChar { char -> char.uppercaseChar() }
-        bathingSiteInfo += "${gradeFieldName}: ${gradeField.rating}\n"
-
-        return bathingSiteInfo
-    }
 
     private fun setBathingSiteDateToToday() {
         binding.waterTempDate.setText(LocalDate.now().toString())
     }
 
-    private fun clearForm() {
-        inputFields.forEach {
-            val field = it.key
-            field.text.clear()
-        }
-        binding.grade.rating = 0F
-        setBathingSiteDateToToday()
-    }
 }
