@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import se.miun.sath2102.dt031g.bathingsites.databinding.ActivityDisplayBathingSitesBinding
 import kotlin.coroutines.CoroutineContext
 
-class DisplayBathingSitesActivity : AppCompatActivity(), CoroutineScope {
+class DisplayBathingSitesActivity : AppCompatActivity(), RecyclerViewInterface, CoroutineScope {
 
     private lateinit var binding: ActivityDisplayBathingSitesBinding
     private lateinit var bathingSites: List<BathingSite>
@@ -35,6 +35,11 @@ class DisplayBathingSitesActivity : AppCompatActivity(), CoroutineScope {
 
 
         setContentView(binding.root)
+    }
+
+    override fun onClick(position: Int) {
+        TODO("Not yet implemented")
+
     }
 
 }
