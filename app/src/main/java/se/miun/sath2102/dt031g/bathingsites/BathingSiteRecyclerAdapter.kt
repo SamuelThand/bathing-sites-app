@@ -11,7 +11,7 @@ import se.miun.sath2102.dt031g.bathingsites.databinding.RecyclerViewRowBinding
 class BathingSiteRecyclerAdapter(
     val context: Context,
     val bathingSites: List<BathingSite>,
-    val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.Adapter<BathingSiteRecyclerAdapter.ViewHolder>() {
+    private val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.Adapter<BathingSiteRecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val binding = RecyclerViewRowBinding.inflate(LayoutInflater.from(context), parent, false)
@@ -29,14 +29,11 @@ class BathingSiteRecyclerAdapter(
 
     class ViewHolder(
         val binding: RecyclerViewRowBinding,
-        val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.ViewHolder(binding.root) {
-
-        private var image: ImageView = binding.imageView
-        private var title: TextView = binding.title
+        private val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.ViewHolder(binding.root) {
 
         init {
             binding.root.setOnClickListener {
-                recyclerViewInterface?.let {
+                recyclerViewInterface.let {
                     if (adapterPosition != RecyclerView.NO_POSITION) {
                         recyclerViewInterface.onClick(adapterPosition)
                     }
