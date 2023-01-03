@@ -8,40 +8,40 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import se.miun.sath2102.dt031g.bathingsites.databinding.RecyclerViewRowBinding
 
-class BathingSiteRecyclerAdapter(context: Context, bathingSites: List<BathingSite>)
-    : RecyclerView.Adapter<BathingSiteRecyclerAdapter.ViewHolder>() {
-
-    private val context: Context
-    private var bathingSites: List<BathingSite>
-
-    init {
-        this.context = context
-        this.bathingSites = bathingSites
-    }
+class BathingSiteRecyclerAdapter(
+    val context: Context,
+    val bathingSites: List<BathingSite>,
+    val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.Adapter<BathingSiteRecyclerAdapter.ViewHolder>() {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        //inflate layout give look to rows
         val binding = RecyclerViewRowBinding.inflate(LayoutInflater.from(context), parent, false)
-        return ViewHolder(binding)
-
-//        return ViewHolder(binding)
+        return ViewHolder(binding, recyclerViewInterface)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        // assign values to views in the row layout file
         holder.binding.title.text = bathingSites[position].name
-//        holder.
     }
 
     override fun getItemCount(): Int {
-        // Totalt antal views
         return bathingSites.size
     }
 
 
-    class ViewHolder(val binding: RecyclerViewRowBinding) : RecyclerView.ViewHolder(binding.root) {
+    class ViewHolder(
+        val binding: RecyclerViewRowBinding,
+        val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.ViewHolder(binding.root) {
 
         private var image: ImageView = binding.imageView
         private var title: TextView = binding.title
+
+        init {
+            binding.root.setOnClickListener {
+                recyclerViewInterface?.let {
+                    if (adapterPosition != RecyclerView.NO_POSITION) {
+                        recyclerViewInterface.onClick(adapterPosition)
+                    }
+                }
+            }
+        }
     }
 }

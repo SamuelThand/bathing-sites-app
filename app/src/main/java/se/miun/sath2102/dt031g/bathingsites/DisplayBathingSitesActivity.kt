@@ -27,19 +27,20 @@ class DisplayBathingSitesActivity : AppCompatActivity(), RecyclerViewInterface, 
         launch {
             bathingSites = BathingsiteDatabase.
             getInstance(this@DisplayBathingSitesActivity).BathingSiteDao().getAll()
-            val adapter = BathingSiteRecyclerAdapter(this@DisplayBathingSitesActivity, bathingSites)
+            val adapter = BathingSiteRecyclerAdapter(
+                this@DisplayBathingSitesActivity,
+                bathingSites,
+                this@DisplayBathingSitesActivity)
             binding.bathingSitesRecyclerView.adapter = adapter
             binding.bathingSitesRecyclerView.layoutManager = LinearLayoutManager(this@DisplayBathingSitesActivity)
             println(bathingSites)
         }
 
-
         setContentView(binding.root)
     }
 
     override fun onClick(position: Int) {
-        TODO("Not yet implemented")
-
+        println(bathingSites.get(position).name)
     }
 
 }
