@@ -79,24 +79,25 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
                         incrementProgress(progress,33)
 
                         val newBathingSites: List<BathingSite>
-                        downloadPath.inputStream().bufferedReader().forEachLine {
+                        downloadPath.inputStream().bufferedReader().forEachLine { it ->
                             println(it)
 
                             val bathingSiteData = it.split(',')
 
-                            // strippa whitespace och andra characters
-                            val long = bathingSiteData[0]
-                            val lat = bathingSiteData[1]
-                            val name = bathingSiteData[2]
-                            val address: String? = if (bathingSiteData.lastIndex >= 3) bathingSiteData[3] else null
+                            val long = bathingSiteData[0].stripUnwantedCharacters()
+                            val lat = bathingSiteData[1].stripUnwantedCharacters()
+                            val name = bathingSiteData[2].stripUnwantedCharacters()
+                            val address: String? = when (bathingSiteData.lastIndex) {
+                                3 -> bathingSiteData[3].stripUnwantedCharacters()
+                                4 -> (bathingSiteData[3] + "," + bathingSiteData[4]).stripUnwantedCharacters()
+                                else -> null
+                            }
 
-//                            if (3 in 0..bathingSiteData..bathingSiteData.lastIndex)
-//                            bathingSiteData[3] ?: null
-
-                            println(long)
-                            println(lat)
-                            println(name)
-                            println(address)
+                            println("long:[$long]")
+                            println("lat:[$lat]")
+                            println("name:[$name]")
+                            println("address:[$address]")
+                            println("\n")
 
 
                         // Skapa en lista med BathingSite och passa till insertAll
@@ -125,6 +126,7 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
                         )
                         errorSnackbar.show()
                     } finally {
+                        downloadPath.delete()
                         progress.dismiss()
                     }
 
@@ -137,6 +139,10 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
             }
 
         }
+    }
+
+    private fun String.stripUnwantedCharacters(): String {
+        return this.filterNot { it == '"' }.trim()
     }
 
     private fun downloadFile(url: String, downloadPath: File) {
