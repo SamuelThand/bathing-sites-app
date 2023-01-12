@@ -78,46 +78,39 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
                         downloadFile(this@run, downloadPath)
                         incrementProgress(progress,33)
 
-                        val newBathingSites: List<BathingSite>
-                        downloadPath.inputStream().bufferedReader().forEachLine { it ->
-                            println(it)
+                        val newBathingSites = mutableListOf<BathingSite>()
+                        downloadPath.inputStream().bufferedReader().forEachLine {
 
-                            val bathingSiteData = it.split(',')
+                            val bathingSiteData = it.substring(1).split(',')
 
-                            val long = bathingSiteData[0].stripUnwantedCharacters()
-                            val lat = bathingSiteData[1].stripUnwantedCharacters()
+                            val longitude = bathingSiteData[0].stripUnwantedCharacters().toDouble()
+                            val latitude = bathingSiteData[1].stripUnwantedCharacters().toDouble()
                             val name = bathingSiteData[2].stripUnwantedCharacters()
-                            val address: String? = when (bathingSiteData.lastIndex) {
-                                3 -> bathingSiteData[3].stripUnwantedCharacters()
-                                4 -> (bathingSiteData[3] + "," + bathingSiteData[4]).stripUnwantedCharacters()
+
+                            val address: String? = when {
+                                bathingSiteData.lastIndex == 3 -> bathingSiteData[3].stripUnwantedCharacters()
+                                bathingSiteData.lastIndex >= 4 -> (bathingSiteData[3] + "," + bathingSiteData[4]).stripUnwantedCharacters()
                                 else -> null
                             }
 
-                            println("long:[$long]")
-                            println("lat:[$lat]")
-                            println("name:[$name]")
-                            println("address:[$address]")
-                            println("\n")
-
-
-                        // Skapa en lista med BathingSite och passa till insertAll
-
-//                            bathingSiteDao.insertAll(BathingSite(
-//                                id = null,
-//                                name = name.toString(),
-//                                description = if (description.isEmpty()) null else description.toString(),
-//                                address = if (address.isEmpty()) null else address.toString(),
-//                                latitude = if (lat.isEmpty()) null else lat.toString().toDouble(),
-//                                longitude = if (long.isEmpty()) null else long.toString().toDouble(),
-//                                waterTemp = if (waterTemp.isEmpty()) null else waterTemp.toString().toDouble(),
-//                                waterTempDate = if (waterTempDate.isEmpty()) null else waterTempDate.toString(),
-//                                grade = grade.rating
-//                            ))
-
+                            newBathingSites.add(
+                                BathingSite(
+                                id = null,
+                                name = name,
+                                description = null,
+                                address = address,
+                                latitude = latitude,
+                                longitude = longitude,
+                                waterTemp = null,
+                                waterTempDate = null,
+                                grade = 2.5f
+                                ))
                         }
-                        val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
+                        incrementProgress(progress,33)
 
-                        // Insertall här
+                        bathingsiteDatabase.BathingSiteDao().insertList(newBathingSites)
+
+                        incrementProgress(progress,33)
 
                     } catch (e: Exception) {
                         Log.e(TAG, "Error in download chain for $downloadPath: $e")
@@ -142,7 +135,9 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
     }
 
     private fun String.stripUnwantedCharacters(): String {
-        return this.filterNot { it == '"' }.trim()
+        val unwantedCharacters = setOf('"', "\uFEFF")
+
+        return this.filterNot { it in unwantedCharacters }.trim()
     }
 
     private fun downloadFile(url: String, downloadPath: File) {

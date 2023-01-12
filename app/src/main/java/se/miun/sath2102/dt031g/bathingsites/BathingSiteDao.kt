@@ -12,4 +12,7 @@ interface BathingSiteDao {
 
     @Insert(onConflict = OnConflictStrategy.ABORT)
     fun insertAll(vararg bathingSites: BathingSite)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    fun insertList(bathingSites: List<BathingSite>)
 }
