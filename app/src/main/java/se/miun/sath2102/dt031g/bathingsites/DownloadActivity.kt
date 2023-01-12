@@ -78,39 +78,11 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
                         downloadFile(this@run, downloadPath)
                         incrementProgress(progress,33)
 
-                        val newBathingSites = mutableListOf<BathingSite>()
-                        downloadPath.inputStream().bufferedReader().forEachLine {
-
-                            val bathingSiteData = it.substring(1).split(',')
-
-                            val longitude = bathingSiteData[0].stripUnwantedCharacters().toDouble()
-                            val latitude = bathingSiteData[1].stripUnwantedCharacters().toDouble()
-                            val name = bathingSiteData[2].stripUnwantedCharacters()
-
-                            val address: String? = when {
-                                bathingSiteData.lastIndex == 3 -> bathingSiteData[3].stripUnwantedCharacters()
-                                bathingSiteData.lastIndex >= 4 -> (bathingSiteData[3] + "," + bathingSiteData[4]).stripUnwantedCharacters()
-                                else -> null
-                            }
-
-                            newBathingSites.add(
-                                BathingSite(
-                                id = null,
-                                name = name,
-                                description = null,
-                                address = address,
-                                latitude = latitude,
-                                longitude = longitude,
-                                waterTemp = null,
-                                waterTempDate = null,
-                                grade = 2.5f
-                                ))
-                        }
+                        val newBathingSites = buildBathingSiteListFromFile(downloadPath)
                         incrementProgress(progress,33)
 
                         bathingsiteDatabase.BathingSiteDao().insertList(newBathingSites)
-
-                        incrementProgress(progress,33)
+                        incrementProgress(progress,34)
 
                     } catch (e: Exception) {
                         Log.e(TAG, "Error in download chain for $downloadPath: $e")
@@ -122,8 +94,8 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
                         downloadPath.delete()
                         progress.dismiss()
                     }
-
                 }
+
             } else {
                 val alreadyDownloadedSnackbar = Snackbar.make(binding.webView, R.string.already_downloaded_snackbar_text,
                     BaseTransientBottomBar.LENGTH_LONG
@@ -134,17 +106,50 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
         }
     }
 
-    private fun String.stripUnwantedCharacters(): String {
-        val unwantedCharacters = setOf('"', "\uFEFF")
-
-        return this.filterNot { it in unwantedCharacters }.trim()
-    }
 
     private fun downloadFile(url: String, downloadPath: File) {
         val downloadConnection = URL(url).openConnection()
         downloadConnection.connect()
 
         downloadPath.downloadToThisPath(downloadConnection)
+    }
+
+    private fun buildBathingSiteListFromFile(file: File): List<BathingSite> {
+        val newBathingSites = mutableListOf<BathingSite>()
+
+        file.inputStream().bufferedReader().forEachLine {
+
+            val bathingSiteData = it.substring(1).split(',')
+            val longitude = bathingSiteData[0].stripUnwantedCharacters().toDouble()
+            val latitude = bathingSiteData[1].stripUnwantedCharacters().toDouble()
+            val name = bathingSiteData[2].stripUnwantedCharacters()
+            val address: String? = when {
+                bathingSiteData.lastIndex == 3 -> bathingSiteData[3].stripUnwantedCharacters()
+                bathingSiteData.lastIndex >= 4 -> (bathingSiteData[3] + "," + bathingSiteData[4]).stripUnwantedCharacters()
+                else -> null
+            }
+
+            newBathingSites.add(
+                BathingSite(
+                    id = null,
+                    name = name,
+                    description = null,
+                    address = address,
+                    latitude = latitude,
+                    longitude = longitude,
+                    waterTemp = null,
+                    waterTempDate = null,
+                    grade = 2.5f
+                ))
+        }
+
+        return newBathingSites
+    }
+
+    private fun String.stripUnwantedCharacters(): String {
+        val unwantedCharacters = setOf('"', "\uFEFF")
+
+        return this.filterNot { it in unwantedCharacters }.trim()
     }
 
     private fun File.downloadToThisPath(connection: URLConnection) {
