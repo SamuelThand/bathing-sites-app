@@ -3,6 +3,7 @@
 
     <!--  MainActivity  -->
     <string name="menu_item_settings">Settings</string>
+    <string name="menu_item_download">Download</string>
     <string name="add_bathing_site_button_text">Add Bathing Site</string>
 
     <!--  BathingSitesFragment  -->
@@ -23,7 +24,7 @@
     <string name="icon_url">https://openweathermap.org/img/w/</string>
     <string name="bathing_site_already_exists_error">A bathing site with these coordinates already exists.</string>
     <string name="unexpected_save_error">An unexpected error occurred when saving bathing site.</string>
-    <string name="unexpected_download_error">An unexpected error occurred when saving bathing site.</string>
+    <string name="unexpected_weather_download_error">An unexpected error occurred when saving bathing site.</string>
     <string name="bathing_site_saved">Bathing Site Saved.</string>
 
     <!-- SettingsActivity -->
@@ -34,12 +35,18 @@
     <string name="current_weather_title">Current weather</string>
     <string name="weather_dialog_button">@android:string/ok</string>
 
-    <!-- Sync Preferences -->
+    <!-- Preferences -->
     <string name="weather_url_key">weather_url_preference</string>
+    <string name="bathingsite_url_key">bathingsite_url_preference</string>
 
     <!-- AddBathingSite Menu -->
     <string name="add_bathing_site_menu_clear">CLEAR</string>
     <string name="add_bathing_site_menu_save">SAVE</string>
     <string name="add_bathing_site_menu_show_weather">Show Weather</string>
+
+    <!--  DownloadActivity  -->
+    <string name="download_bathing_site_progress_title">Downloading bathing sites..</string>
+    <string name="unexpected_bathing_site_download_error">An unexpected error occurred when downloading bathing sites.</string>
+    <string name="already_downloaded_snackbar_text">This bathing site has already been downloaded.</string>
 
 </resources>

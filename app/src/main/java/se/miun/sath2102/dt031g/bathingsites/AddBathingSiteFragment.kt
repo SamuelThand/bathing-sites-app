@@ -275,7 +275,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
                 } catch (e: Exception) {
                     Log.e(TAG, "Error downloading weather data: $e")
-                    displaySnackbar(getString(R.string.unexpected_download_error))
+                    displaySnackbar(getString(R.string.unexpected_weather_download_error))
 
                 } finally {
                     progress.dismiss()

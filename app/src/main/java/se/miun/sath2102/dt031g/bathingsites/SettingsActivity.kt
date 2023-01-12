@@ -16,6 +16,12 @@ class SettingsActivity : AppCompatActivity() {
                 context.getString(R.string.weather_url_key), Constants.WEATHER_URL.value)
         }
 
+        fun getBathingSiteURL(context: Context): String? {
+            val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+            return sharedPreferences.getString(
+                context.getString(R.string.bathingsite_url_key), Constants.BATHINGSITE_URL.value)
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
