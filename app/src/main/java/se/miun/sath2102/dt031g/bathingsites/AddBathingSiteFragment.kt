@@ -19,19 +19,13 @@ import java.net.URL
 import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
 /**
- * A simple [Fragment] subclass.
- * Use the [AddBathingSiteFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * Fragment containing functionality and the custom view BathingSitesView
+ * for adding a new bathing site.
+ *
+ * Coroutine concepts was learned from the video series https://youtu.be/eUfSmd-ntUI
  */
 class AddBathingSiteFragment : Fragment(), CoroutineScope {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
     private lateinit var bathingsiteDatabase: BathingsiteDatabase
@@ -41,39 +35,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
         get() = job + Dispatchers.IO
 
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddBathingSiteFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddBathingSiteFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
-
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-
         context?.let {
             bathingsiteDatabase = BathingsiteDatabase.getInstance(it)
         }
-
         job = Job()
     }
 
@@ -85,11 +52,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
-                              savedInstanceState: Bundle?): View {
+    savedInstanceState: Bundle?): View {
         binding = FragmentAddBathingSiteBinding.inflate(inflater, container, false)
-
-        // True if field is required, false if not
-        inputFields = mutableMapOf(
+        inputFields = mutableMapOf( // True if field is required, false if not.
             Pair(binding.name, true),
             Pair(binding.description, false),
             Pair(binding.address, true),
@@ -137,9 +102,13 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Handles the event of a user pressing the save button in the fragment. Delay is added to
+     * simulate coroutine processing in the background.
+     */
     private fun handleBathingSiteSave() {
         determineRequiredFields()
-        validateInput()
+        validateInputFields()
         if (completeForm()) {
             launch {
                 try {
@@ -162,6 +131,11 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Determines what input fields must be filled for a bathing site to be saved. If the
+     * address field are filled, coordinates are not required. If a coordinate field is filled,
+     * address is not required. If neither coordinates or address has been filled, both are required.
+     */
     private fun determineRequiredFields() {
         val addressText = binding.address.text
         val latText = binding.latitude.text
@@ -180,7 +154,11 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
-    private fun validateInput() {
+    /**
+     * Validates the input fields, and displays the required-error with a suitable message if
+     * a required field is not filled out.
+     */
+    private fun validateInputFields() {
         inputFields.forEach {
             val field = it.key
             val fieldName = resources.getResourceName(field.id)
@@ -198,6 +176,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Determines if the form has been completed by checking if there are any errors.
+     */
     private fun completeForm(): Boolean {
         var completeForm = true
         inputFields.forEach {
@@ -212,11 +193,15 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Reads the input fields, conditionally formats them and inserts them into the
+     * Room-database using the BathingSiteDao data-access-object in the coroutine scope with the
+     * IO dispatcher. Throws an SQL exception if the bathing site already exists.
+     */
     @Throws(SQLiteConstraintException::class)
     private suspend fun saveBathingSiteToDatabase() {
         withContext(Dispatchers.IO) {
 
-            val bathingSiteDao = bathingsiteDatabase.BathingSiteDao()
             val name = binding.name.text
             val description = binding.description.text
             val address = binding.address.text
@@ -226,7 +211,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
             val waterTempDate = binding.waterTempDate.text
             val grade = binding.grade
 
-            bathingSiteDao.insertAll(BathingSite(
+            bathingsiteDatabase.BathingSiteDao().insertAll(BathingSite(
                 id = null,
                 name = name.toString(),
                 description = if (description.isEmpty()) null else description.toString(),
@@ -241,6 +226,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Clears the form.
+     */
     private fun clearForm() {
         inputFields.forEach {
             val field = it.key
@@ -251,43 +239,47 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Handles the event of a user pressing the show weather button in the fragment. Launches
+     * the downloading, parsing and displaying of the weather data in the coroutine scope
+     * if applicable.
+     */
     private fun handleBathingSiteShowWeather() {
-        if (validateFormLocationInfo()) {
-
-            launch {
-                val progress = makeProgressDialog()
-                try {
-                    val weatherJSON = getWeatherData()
-                    val statusCode = weatherJSON.get("cod")
-
-                    if (statusCode == 200) {
-                        val iconCode = weatherJSON.getJSONArray("weather")
-                            .getJSONObject(0).getString("icon")
-                        val weatherIcon = downloadWeatherIcon(iconCode)
-                        val dialog = WeatherDialogFragment.newInstance(weatherJSON.toString(), weatherIcon)
-                        dialog.show(childFragmentManager, "WeatherFragment")
-                    } else {
-                        val message = (weatherJSON.get("message") as String).replaceFirstChar {
-                                firstChar -> firstChar.uppercase()
-                        }
-                        displaySnackbar(message)
-                    }
-
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error downloading weather data: $e")
-                    displaySnackbar(getString(R.string.unexpected_weather_download_error))
-
-                } finally {
-                    progress.dismiss()
-                }
-            }
-
-        } else {
+        if (!validateFormLocationInfo()) {
             displaySnackbar(getString(R.string.cant_download_weather_data))
+            return
+        }
+
+        launch {
+            val progress = makeProgressDialog()
+            try {
+                val weatherJSON = getWeatherData()
+                val statusCode = weatherJSON.get("cod")
+                if (statusCode == 200) {
+                    val iconCode = weatherJSON.getJSONArray("weather")
+                        .getJSONObject(0).getString("icon")
+                    val weatherIcon = downloadWeatherIcon(iconCode)
+                    val dialog = WeatherDialogFragment.newInstance(weatherJSON.toString(), weatherIcon)
+                    dialog.show(childFragmentManager, "WeatherFragment")
+                } else {
+                    val message = (weatherJSON.get("message") as String).replaceFirstChar {
+                            firstChar -> firstChar.uppercase()
+                    }
+                    displaySnackbar(message)
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error downloading weather data: $e")
+                displaySnackbar(getString(R.string.unexpected_weather_download_error))
+            } finally {
+                progress.dismiss()
+            }
         }
     }
 
 
+    /**
+     * Determines if there is complete location information in the form.
+     */
     private fun validateFormLocationInfo(): Boolean {
         val address = binding.address.text
         val lat = binding.latitude.text
@@ -299,6 +291,9 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Creates and displays a progress
+     */
     private suspend fun makeProgressDialog(): ProgressDialog {
         return withContext(Dispatchers.Main) {
             val progress = ProgressDialog(context)
