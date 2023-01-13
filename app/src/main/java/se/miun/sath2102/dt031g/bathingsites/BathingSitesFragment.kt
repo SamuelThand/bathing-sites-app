@@ -8,74 +8,39 @@ import android.view.View
 import android.view.ViewGroup
 import se.miun.sath2102.dt031g.bathingsites.databinding.FragmentBathingSitesBinding
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
-
 /**
- * A simple [Fragment] subclass.
- * Use the [BathingSitesFragment.newInstance] factory method to
- * create an instance of this fragment.
+ * Fragment containing the custom view BathingSitesView and its functionality.
  */
 class BathingSitesFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
     private lateinit var binding: FragmentBathingSitesBinding
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
-    ): View {
-
+        savedInstanceState: Bundle?): View {
         binding = FragmentBathingSitesBinding.inflate(inflater, container, false)
         setBathingSiteViewOnClickListener()
 
         return binding.root
     }
 
+
     override fun onResume() {
-        binding.bathingSitesView.setText()
+        binding.bathingSitesView.setTextFromDatabase()
         super.onResume()
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment BathingSitesFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            BathingSitesFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
-    }
 
-    //TODO update and implement open new activity
+    /**
+     * Sets the listener for click events on the BathingSitesView.
+     */
     private fun setBathingSiteViewOnClickListener() {
         binding.bathingSitesView.setOnClickListener {
-//            binding.bathingSitesView.displayBathingSites()
-//            binding.bathingSitesView.setText()
-
             val intent = Intent(context, DisplayBathingSitesActivity::class.java)
             startActivity(intent)
         }
     }
+
+
 }

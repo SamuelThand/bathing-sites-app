@@ -3,11 +3,15 @@ package se.miun.sath2102.dt031g.bathingsites
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import se.miun.sath2102.dt031g.bathingsites.databinding.RecyclerViewRowBinding
 
+/**
+ * Adapter class responsible for providing data to the DisplayBathingSitesActivity's recycler view,
+ * and create the view holders for this data.
+ *
+ * Recyclerview concepts was learned from the video https://www.youtube.com/watch?v=Mc0XT58A1Z4
+ */
 class BathingSiteRecyclerAdapter(
     val context: Context,
     val bathingSites: List<BathingSite>,
@@ -27,10 +31,20 @@ class BathingSiteRecyclerAdapter(
     }
 
 
+    /**
+     * Holds references to the view items that display data in DisplayBathingSitesActivity's recycler view.
+     */
     class ViewHolder(
         val binding: RecyclerViewRowBinding,
-        private val recyclerViewInterface: RecyclerViewInterface) : RecyclerView.ViewHolder(binding.root) {
+        private val recyclerViewInterface: RecyclerViewInterface)
+        : RecyclerView.ViewHolder(binding.root) {
 
+
+        /**
+         * Sets the recyclerViewInterface to handle click events for the view item in
+         * DisplayBathingSitesActivity's recycler view if the ViewHolder has a valid position
+         * in the adapter.
+         */
         init {
             binding.root.setOnClickListener {
                 recyclerViewInterface.let {
@@ -40,5 +54,9 @@ class BathingSiteRecyclerAdapter(
                 }
             }
         }
+
+
     }
+
+
 }

@@ -20,12 +20,12 @@ import java.time.LocalDate
 import kotlin.coroutines.CoroutineContext
 
 /**
- * Fragment containing functionality and the custom view BathingSitesView
- * for adding a new bathing site.
+ * Fragment containing functionality for adding a new bathing site.
  *
  * Coroutine concepts was learned from the video series https://youtu.be/eUfSmd-ntUI
  */
 class AddBathingSiteFragment : Fragment(), CoroutineScope {
+
     private lateinit var binding: FragmentAddBathingSiteBinding
     private lateinit var inputFields: MutableMap<EditText, Boolean>
     private lateinit var bathingsiteDatabase: BathingsiteDatabase
