@@ -28,7 +28,6 @@
     <string name="bathing_site_saved">Bathing Site Saved.</string>
 
     <!-- SettingsActivity -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_activity_settings">Settings</string>
 
     <!-- WeatherDialogFragment -->
