@@ -7,9 +7,13 @@ import android.view.Menu
 import android.view.MenuItem
 import se.miun.sath2102.dt031g.bathingsites.databinding.ActivityMainBinding
 
+/**
+ * The main activity of the app.
+ */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,11 +22,13 @@ class MainActivity : AppCompatActivity() {
         setFloatingActionButtonOnClickListener()
     }
 
+
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         val menuInflater = menuInflater
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
     }
+
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
@@ -40,11 +46,16 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
+    /**
+     * Set the event listener for the floating action button.
+     */
     private fun setFloatingActionButtonOnClickListener() {
         binding.addBathingSiteButton.setOnClickListener {
             val intent = Intent(this, AddBathingSiteActivity::class.java)
             startActivity(intent)
         }
     }
+
 
 }
