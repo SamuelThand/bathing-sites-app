@@ -5,8 +5,10 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 
-@Entity(indices = [Index(value = ["latitude", "longitude"],
-    unique = true)])
+/**
+ * Defines the structure of a BathingSite to be stored in the Room database.
+ */
+@Entity(indices = [Index(value = ["latitude", "longitude"], unique = true)])
 data class BathingSite(
     @PrimaryKey(autoGenerate = true) val id: Int?,
     @ColumnInfo(name = "name") val name: String,

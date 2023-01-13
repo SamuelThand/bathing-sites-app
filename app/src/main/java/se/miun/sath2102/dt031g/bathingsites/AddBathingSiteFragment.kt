@@ -292,7 +292,7 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
 
 
     /**
-     * Creates and displays a progress
+     * Creates and displays a progress.
      */
     private suspend fun makeProgressDialog(): ProgressDialog {
         return withContext(Dispatchers.Main) {
@@ -305,6 +305,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Constructs a query string and passes it to downloadWeatherData(). Delay added to simulate
+     * processing.
+     *
+     * @return JSONobject containing weather data
+     */
     private suspend fun getWeatherData(): JSONObject {
         val address = binding.address.text
         val lat = binding.latitude.text
@@ -325,6 +331,11 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Downloads the weather data and returns it as a string.
+     *
+     * @return The weatherdata string or null
+     */
     private fun downloadWeatherData(queryString: String): String? {
         return context?.let { it ->
             val weatherURL = SettingsActivity.getWeatherURL(it)
@@ -337,6 +348,12 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Downloads an icon using the queryString parameter and returns it as a Bitmap.
+     *
+     * @param queryString The query-string to use for downloading the icon
+     * @return The downloaded icon as a Bitmap
+     */
     private suspend fun downloadWeatherIcon(queryString: String): Bitmap {
         return withContext(Dispatchers.IO) {
             val iconURL = getString(R.string.icon_url)
@@ -357,14 +374,23 @@ class AddBathingSiteFragment : Fragment(), CoroutineScope {
     }
 
 
+    /**
+     * Creates and displays a snackbar using the passed messageToDisplay string as message.
+     *
+     * @param messageToDisplay Message to display in the snackbar
+     */
     private fun displaySnackbar(messageToDisplay: String) {
         val snackBar = Snackbar.make(binding.root, messageToDisplay, BaseTransientBottomBar.LENGTH_LONG)
         snackBar.show()
     }
 
 
+    /**
+     * Sets the text of the waterTempDate view to display today's date.
+     */
     private fun setBathingSiteDateToToday() {
         binding.waterTempDate.setText(LocalDate.now().toString())
     }
+
 
 }
