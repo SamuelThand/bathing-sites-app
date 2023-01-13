@@ -11,6 +11,9 @@ import kotlinx.coroutines.launch
 import se.miun.sath2102.dt031g.bathingsites.databinding.ActivityDisplayBathingSitesBinding
 import kotlin.coroutines.CoroutineContext
 
+/**
+ * Activity for displaying bathing sites.
+ */
 class DisplayBathingSitesActivity : AppCompatActivity(), RecyclerViewInterface, CoroutineScope {
 
     private lateinit var binding: ActivityDisplayBathingSitesBinding
@@ -19,22 +22,25 @@ class DisplayBathingSitesActivity : AppCompatActivity(), RecyclerViewInterface, 
     override val coroutineContext: CoroutineContext
         get() = job + Dispatchers.IO
 
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         job = Job()
-
         binding = ActivityDisplayBathingSitesBinding.inflate(layoutInflater)
 
+        // Gets all stored BathingSite objects from the BathingsiteDatabase, creates a
+        // recycler adapter from BathingSiteRecyclerAdapter using the bathing sites
+        // and sets the bathingSitesRecyclerView to use this adapter, and a
+        // LinearLayout Layoutmanager. This is done in the coroutine scope.
         launch {
-            bathingSites = BathingsiteDatabase.
-            getInstance(this@DisplayBathingSitesActivity).BathingSiteDao().getAll()
+            bathingSites = BathingsiteDatabase.getInstance(this@DisplayBathingSitesActivity)
+                .BathingSiteDao().getAll()
             val adapter = BathingSiteRecyclerAdapter(
                 this@DisplayBathingSitesActivity,
                 bathingSites,
                 this@DisplayBathingSitesActivity)
             binding.bathingSitesRecyclerView.adapter = adapter
             binding.bathingSitesRecyclerView.layoutManager = LinearLayoutManager(this@DisplayBathingSitesActivity)
-            println(bathingSites)
         }
 
         setContentView(binding.root)
