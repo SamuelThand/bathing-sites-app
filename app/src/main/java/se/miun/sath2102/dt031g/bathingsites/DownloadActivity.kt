@@ -125,7 +125,10 @@ class DownloadActivity : AppCompatActivity(), DownloadListener, CoroutineScope {
             val name = bathingSiteData[2].stripUnwantedCharacters()
             val address: String? = when {
                 bathingSiteData.lastIndex == 3 -> bathingSiteData[3].stripUnwantedCharacters()
-                bathingSiteData.lastIndex >= 4 -> (bathingSiteData[3] + "," + bathingSiteData[4]).stripUnwantedCharacters()
+                bathingSiteData.lastIndex >= 4 -> bathingSiteData
+                    .slice(3..bathingSiteData.lastIndex)
+                    .joinToString(",")
+                    .stripUnwantedCharacters()
                 else -> null
             }
 
